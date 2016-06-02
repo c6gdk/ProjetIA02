@@ -85,28 +85,18 @@ vide([[]]).
 elem2(T, L):- queue(Q, L), tete(T,Q).
 
 
+
 % arg1: liste a concat (donnée), arg2: liste a concat (donnée), arg3: liste concaténée (retour)
 
 concat([],L,L).
 concat([X|Q],L,[X|R]):-concat(Q,L,R).
 
 
+
 % arg1: liste ds laquelle on recheche le nieme elem (donnée), arg2: N (donnée), arg3: elem trouvé (retour)
 
 elem_n([T|_],1,T).										% on met un cut là ???? 
 elem_n([_|Q],N,E):- NN is N-1, elem_n(Q,NN,E).
-
-
-
-
-/*
-% ya moyen de les refaire ces 2 la ? fait !
-fin_list_n(L,1,QL):- queue(QL,L).									% on recup dans QL la fin(queue) de la liste L APRES le N-ieme element de la liste
-fin_list_n(L,N,QL):- NN is N-1, queue(Q,L), fin_list_n(Q,NN,QL).
-
-debut_list_n(L,1,[]).												% on recup dans le 3eme arg de debut de la liste L AVANT le N-ieme element
-debut_list_n([T|Q],N,[T|R]):-  NN is N-1, debut_list_n(Q,NN,R).
-*/
 
 
 
@@ -122,22 +112,27 @@ recreate_list(RE,[T|Q],V,[T|R]):- NV is V-1, recreate_list(RE,Q,NV,R).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% POSITIONNEMENT D UN PION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+
 % arg1: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), arg2: on met la valeur 'P' pour le pion dans la queue et on remet la tete (case retour)
 
-changeP(E,[T|'P']):- queue(RQ,E), vide(RQ),tete(T,E).
+changeP([T|Q],[T|'P'], 0):- vide(Q),!.
+changeP([T|Q],[T|'P'], -1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
 
 % arg1: colonne d entrée (donnée), arg2: ligne a modif (donnée), arg3: liste modifiée (retour)
 
-modif_line(V,L,LR):-elem_n(L,V,E), changeP(E,RE), recreate_list(RE,L,V,LR).
+modif_line(V,L,LR,0):-elem_n(L,V,E), changeP(E,RE,C), C=0, recreate_list(RE,L,V,LR),!.
+modif_line(V,L,LR,-1):-!. 				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
 
 
 
 % arg1: ligne d entrée (donnée) agr2: colonne d entrée (donnée), arg3: damier a modif (donnée), arg4: damier modifié (val de retour)
 
-find_line(1,V,D,RD):- tete(L,D), modif_line(V,L,RL), recreate_list(RL,D,1,RD),!.
-find_line(2,V,D,RD):- elem2(L,D) , modif_line(V,L,RL), recreate_list(RL,D,2,RD),!.
+find_line(1,V,D,RD,0):- tete(L,D), modif_line(V,L,RL,C), C=0, recreate_list(RL,D,1,RD),!.
+find_line(2,V,D,RD,0):- elem2(L,D) , modif_line(V,L,RL,C), C=0, recreate_list(RL,D,2,RD),!.
+find_line(_,V,D,RD,-1):-!. 				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
+
 
 
 % arg1: coordonne ligne a verif (donnée), arg2: coordonne col a verif (donnée), arg3: val corrigée ligne (retour), arg4: val corrigée col (retour)
@@ -148,34 +143,53 @@ verif_co(_,_,RX,RY):- write('vous avez entre des coordonees erronees, veuillez r
 
 
 
+verif_case_occup(0,_,RD,RD):-!.
+verif_case_occup(-1,X,_,NRD):- write('la case est deja occupee, veuillez recommencer'), nl, 
+	write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), verif_co(U,V,RU,RV), find_line(RU,RV,X,RD,C), verif_case_occup(C,X,RD,NRD),!.
+
+
+
 positionner(_):- damier(X),  write('entrez les coordonees de la case du pion:'), nl, write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
-	verif_co(U,V,RU,RV), find_line(RU,RV,X,RD), retract(damier(X)), asserta(damier(RD)).
+	verif_co(U,V,RU,RV), find_line(RU,RV,X,RD,C), verif_case_occup(C,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% POSITIONNEMENT DE LA KALISTA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+
 % arg1: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), arg2: on met la valeur 'K' pour kalista dans la queue et on remet la tete (case retour)
 
-changeK([T|Q],[T|'K']):- vide(Q).
+changeK([T|Q],[T|'K'], 0):- vide(Q).
+changeK([T|Q],[T|'K'], -1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
+
 
 
 % arg1: colonne d entrée (donnée), arg2: ligne a modif (donnée), arg3: liste modifiée (retour)
 
-modif_lineK(V,L,LR):-elem_n(L,V,E), changeK(E,RE), recreate_list(RE,L,V,LR). 
+modif_lineK(V,L,LR,0):-elem_n(L,V,E), changeK(E,RE,C), C=0, recreate_list(RE,L,V,LR). 
+modif_lineK(V,L,LR,-1).				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
 
 % arg1: ligne d entrée (donnée) agr2: colonne d entrée (donnée), arg3: damier a modif (donnée), arg4: damier modifié (val de retour)
 
-find_lineK(1,V,D,RD):- tete(L,D), modif_lineK(V,L,RL), recreate_list(RL,D,1,RD),!. 
-find_lineK(2,V,D,RD):- elem2(L,D) , modif_lineK(V,L,RL), recreate_list(RL,D,2,RD),!.
+find_lineK(1,V,D,RD,0):- tete(L,D), modif_lineK(V,L,RL,C), C=0, recreate_list(RL,D,1,RD),!. 
+find_lineK(2,V,D,RD,0):- elem2(L,D) , modif_lineK(V,L,RL,C), C=0, recreate_list(RL,D,2,RD),!.
+find_lineK(_,V,D,RD,-1):-!.			% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
+
+
+% arg1: valeur permettant de gerer l erreur, si -1 on la gere (donnée), arg2: on passe le damier pour pouvoir re-realiser le positionnement en cas d erreur (donnée)
+% arg3: le damier precedement modifié dans le cas ou il y a pas eu d erreur, qu on retourne donc (donnée), arg4: le damier modifie en cas d erreur (retour)
+
+verif_case_occupK(0,_,RD,RD):-!.
+verif_case_occupK(-1,X,_,NRD):- write('la case est deja occupee, veuillez recommencer'), nl, 
+	write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), verif_co(U,V,RU,RV), find_lineK(RU,RV,X,RD,C), verif_case_occupK(C,X,RD,NRD),!.
 
 
 
 positionnerK(_):- damier(X),  write('entrez les coordonees de la case de la kalista:'), nl, write('pour la ligne L= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
-	verif_co(U,V,RU,RV), find_lineK(RU,RV,X,RD), retract(damier(X)), asserta(damier(RD)).
+	verif_co(U,V,RU,RV), find_lineK(RU,RV,X,RD,C), verif_case_occupK(C,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
 
 
 
