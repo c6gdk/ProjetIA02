@@ -71,18 +71,12 @@ affichage_dam([X|Y]):-affiche_ligne(X), nl,affichage_dam(Y).
 
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PREDICATS OUTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 tete(T, [T|_]).
 queue(Q, [_|Q]).
 vide([]).
 vide([[]]).
-
-
-elem2(T, L):- queue(Q, L), tete(T,Q).
 
 
 
@@ -109,48 +103,62 @@ recreate_list(RE,[T|Q],V,[T|R]):- NV is V-1, recreate_list(RE,Q,NV,R).
 
 
 
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% POSITIONNEMENT D UN PION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
-% arg1: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), arg2: on met la valeur 'P' pour le pion dans la queue et on remet la tete (case retour)
+% arg1: couleur joueur (donnée), arg2: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), 
+% arg3: on met la valeur 'k' pour kalista dans la queue et on remet la tete (case retour)
 
-changeP([T|Q],[T|'P'], 0):- vide(Q),!.
-changeP([T|Q],[T|'P'], -1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
+changeP('R',[T|Q],[T|'pR'], 0):- vide(Q),!.
+changeP('O',[T|Q],[T|'pO'], 0):- vide(Q),!.
+changeP(_,_,_, -1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
 
 % arg1: colonne d entrée (donnée), arg2: ligne a modif (donnée), arg3: liste modifiée (retour)
 
-modif_line(V,L,LR,0):-elem_n(L,V,E), changeP(E,RE,C), C=0, recreate_list(RE,L,V,LR),!.
-modif_line(V,L,LR,-1):-!. 				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
+modif_line(J,V,L,LR,0):-elem_n(L,V,E), changeP(J,E,RE,C), C=0, recreate_list(RE,L,V,LR),!.
+modif_line(J,V,L,LR,-1):-!. 				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
 
 
 
-% arg1: ligne d entrée (donnée) agr2: colonne d entrée (donnée), arg3: damier a modif (donnée), arg4: damier modifié (val de retour)
+% arg1: couleur joueur (donnée), arg2: ligne d entrée (donnée) agr3: colonne d entrée (donnée), arg4: damier a modif (donnée), arg5: damier modifié (val de retour)
 
-find_line(1,V,D,RD,0):- tete(L,D), modif_line(V,L,RL,C), C=0, recreate_list(RL,D,1,RD),!.
-find_line(2,V,D,RD,0):- elem2(L,D) , modif_line(V,L,RL,C), C=0, recreate_list(RL,D,2,RD),!.
-find_line(_,V,D,RD,-1):-!. 				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
+find_line(J,U,V,D,RD,0):- elem_n(D,U,L), modif_line(J,V,L,RL,C), C=0, recreate_list(RL,D,U,RD),!.
+find_line(_,_,V,D,RD,-1):-!. 				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
 
 
 
 % arg1: coordonne ligne a verif (donnée), arg2: coordonne col a verif (donnée), arg3: val corrigée ligne (retour), arg4: val corrigée col (retour)
 
-verif_co(U,V,U,V):- U>0, U<3, V>0, V<7,!.
-verif_co(_,_,RX,RY):- write('vous avez entre des coordonees erronees, veuillez recommencer'), nl,
-	write('pour la ligne l= '), read(X), nl, write('pour la colonne C= '), read(Y), verif_co(X,Y,RX,RY),!.
+verif_co('R',U,V,U,V):- U>0, U<3, V>0, V<7,!.
+verif_co('O',U,V,U,V):- U>4, U<7, V>0, V<7,!.
+verif_co(J,_,_,RX,RY):- write('vous avez entre des coordonees erronees, veuillez recommencer'), nl,
+	write('pour la ligne l= '), read(X), nl, write('pour la colonne C= '), read(Y), verif_co(J,X,Y,RX,RY),!.
+
+
+% arg1: valeur permettant de gerer l erreur, si -1 on la gere (donnée), arg2: le joueur utile pour une erreur pour refaire le damier (donnée),
+% darg3: on passe le damier pour pouvoir re-realiser le positionnement en cas d erreur (donnée), 
+% arg4: le damier precedement modifié dans le cas ou il y a pas eu d erreur, qu on retourne donc (donnée), arg5: le damier modifie en cas d erreur (retour)
+
+verif_case_occup(0,_,_,RD,RD):-!.
+verif_case_occup(-1,J,X,_,NRD):- write('la case est deja occupee, veuillez recommencer'), nl, 
+	write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), verif_co(J,U,V,RU,RV), find_line(J,RU,RV,X,RD,C), verif_case_occup(C,J,X,RD,NRD),!.
 
 
 
-verif_case_occup(0,_,RD,RD):-!.
-verif_case_occup(-1,X,_,NRD):- write('la case est deja occupee, veuillez recommencer'), nl, 
-	write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), verif_co(U,V,RU,RV), find_line(RU,RV,X,RD,C), verif_case_occup(C,X,RD,NRD),!.
+positionner(J):- damier(X),  write('entrez les coordonees de la case du pion:'), nl, write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
+	verif_co(J,U,V,RU,RV), find_line(J,RU,RV,X,RD,C), verif_case_occup(C,J,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
 
 
 
-positionner(_):- damier(X),  write('entrez les coordonees de la case du pion:'), nl, write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
-	verif_co(U,V,RU,RV), find_line(RU,RV,X,RD,C), verif_case_occup(C,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
+
+
 
 
 
@@ -158,38 +166,47 @@ positionner(_):- damier(X),  write('entrez les coordonees de la case du pion:'),
 
 
 
-% arg1: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), arg2: on met la valeur 'K' pour kalista dans la queue et on remet la tete (case retour)
+% arg1: couleur joueur (donnée), arg2: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), 
+% arg3: on met la valeur 'k' pour kalista dans la queue et on remet la tete (case retour)
 
-changeK([T|Q],[T|'K'], 0):- vide(Q).
-changeK([T|Q],[T|'K'], -1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
-
-
-
-% arg1: colonne d entrée (donnée), arg2: ligne a modif (donnée), arg3: liste modifiée (retour)
-
-modif_lineK(V,L,LR,0):-elem_n(L,V,E), changeK(E,RE,C), C=0, recreate_list(RE,L,V,LR). 
-modif_lineK(V,L,LR,-1).				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
+changeK('R',[T|Q],[T|'kR'], 0):- vide(Q),!.
+changeK('O',[T|Q],[T|'kO'], 0):- vide(Q),!.
+changeK(_,_,_,-1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
 
-% arg1: ligne d entrée (donnée) agr2: colonne d entrée (donnée), arg3: damier a modif (donnée), arg4: damier modifié (val de retour)
+% arg1: couleur joueur (donnée), arg2: colonne d entrée (donnée), arg3: ligne a modif (donnée), arg4: liste modifiée (retour)
 
-find_lineK(1,V,D,RD,0):- tete(L,D), modif_lineK(V,L,RL,C), C=0, recreate_list(RL,D,1,RD),!. 
-find_lineK(2,V,D,RD,0):- elem2(L,D) , modif_lineK(V,L,RL,C), C=0, recreate_list(RL,D,2,RD),!.
-find_lineK(_,V,D,RD,-1):-!.			% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
-
-
-% arg1: valeur permettant de gerer l erreur, si -1 on la gere (donnée), arg2: on passe le damier pour pouvoir re-realiser le positionnement en cas d erreur (donnée)
-% arg3: le damier precedement modifié dans le cas ou il y a pas eu d erreur, qu on retourne donc (donnée), arg4: le damier modifie en cas d erreur (retour)
-
-verif_case_occupK(0,_,RD,RD):-!.
-verif_case_occupK(-1,X,_,NRD):- write('la case est deja occupee, veuillez recommencer'), nl, 
-	write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), verif_co(U,V,RU,RV), find_lineK(RU,RV,X,RD,C), verif_case_occupK(C,X,RD,NRD),!.
+modif_lineK(J,V,L,LR,0):- elem_n(L,V,E), changeK(J,E,RE,C), C=0, recreate_list(RE,L,V,LR),!. 
+modif_lineK(J,V,L,LR,-1):-!.				% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
 
-positionnerK(_):- damier(X),  write('entrez les coordonees de la case de la kalista:'), nl, write('pour la ligne L= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
-	verif_co(U,V,RU,RV), find_lineK(RU,RV,X,RD,C), verif_case_occupK(C,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
+% arg1: couleur joueur (donnée), arg2: ligne d entrée (donnée) agr3: colonne d entrée (donnée), arg4: damier a modif (donnée), arg5: damier modifié (val de retour)
+
+
+find_lineK(J,U,V,D,RD,0):- elem_n(D,U,L), modif_lineK(J,V,L,RL,C), C=0, recreate_list(RL,D,U,RD),!.
+find_lineK(J,_,V,D,RD,-1):-!.			% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place.
+
+
+
+% arg1: valeur permettant de gerer l erreur, si -1 on la gere (donnée), arg2: le joueur utile pour une erreur pour refaire le damier (donnée),
+% darg3: on passe le damier pour pouvoir re-realiser le positionnement en cas d erreur (donnée), 
+% arg4: le damier precedement modifié dans le cas ou il y a pas eu d erreur, qu on retourne donc (donnée), arg5: le damier modifie en cas d erreur (retour)
+
+verif_case_occupK(0,_,_,RD,RD):-!.
+verif_case_occupK(-1,J,X,_,NRD):- write('la case est deja occupee, veuillez recommencer'), nl, 
+	write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), verif_co(J,U,V,RU,RV), find_lineK(J,RU,RV,X,RD,C), verif_case_occupK(C,J,X,RD,NRD),!.
+
+
+
+positionnerK(J):- damier(X),  write('entrez les coordonees de la case de la kalista:'), nl, write('pour la ligne L= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
+	verif_co(J,U,V,RU,RV), find_lineK(J,RU,RV,X,RD,C), verif_case_occupK(C,J,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
+
+
+
+
+
 
 
 
@@ -198,24 +215,23 @@ positionnerK(_):- damier(X),  write('entrez les coordonees de la case de la kali
 
 
 
-
-ajout_pion(0).			% pas besoin de cut, on est a 0, il pourra pas tenter autre chose (a moins qu il ne remonte avant ?)
-ajout_pion(I):- NI is I-1, positionner(_), ajout_pion(NI).
-
+ajout_pion(_,0).			% pas besoin de cut, on est a 0, il pourra pas tenter autre chose (a moins qu il ne remonte avant ?)
+ajout_pion(I):- NI is I-1, positionner(J), ajout_pion(J,NI).
 
 
 
+%
 
-% si un pion est repositionne au meme endroit ca crash, gerer ce petit pb. !!!!!!!!!!!!!!!
-
-init_disposition(_):- ajout_pion(5), positionnerK(_),!.
+init_disposition(J):- ajout_pion(J,5), positionnerK(J),!.
 
 
 
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%% CHOIX DU COTE DE DEPART POUR LE JOUEUR ROUGE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%% CHOIX DU COTE DE DEPART POUR LE JOUEUR ROUGE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -239,10 +255,7 @@ choix_cote(X):-cote_init(_).
 
 
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INITIALISATION DU DAMIER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INITIALISATION DU DAMIER POUR LES 2 JOUEURS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 initBoard(Joueur):- Joueur='R', cote_init(_), init_disposition(Joueur),!.
