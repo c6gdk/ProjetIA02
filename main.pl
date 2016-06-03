@@ -99,19 +99,30 @@ elem_n([_|Q],N,E):- NN is N-1, elem_n(Q,NN,E).
 recreate_list(RE,[_|Q],1,[RE|Q]):-!.
 recreate_list(RE,[T|Q],V,[T|R]):- NV is V-1, recreate_list(RE,Q,NV,R).
 
+%prédicat pour verifier que N'est pas dans liste
+
+no_liste(N,[]):-!.
+no_liste(N,[N|_]):-fail,!.
+
+no_liste(N,[T|Q]):-no_liste(N,Q). 
 % predicat pour recup les info d'une case
 
-recup_ligne([T|_],1,T):-!.
+recup_ligne([T|_],1,T).
 recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne). 
 
-recup_case([T|_],1,T):-!.
+recup_case([T|_],1,T).
 recup_case([T|Q],Num_Case,Case):- Res is Num_Case-1, recup_case(Q,Res,Case).
 recup_case(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(Ligne,Num_Case,Case). 
 recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari|Pion]), write(Ari) .
 
 
 
-
+/* A garder pour reflechir a un genre de recuperation des cases possédant une arité, mais faut tout revoir du coup
+recup_case():-.
+recup_case(D,Num_Ligne,[T|_],TempL,Num_Case,T,1):-.
+recup_case(D,Num_Ligne,[T|Q],TempL,Num_Case,Case,TempC):- Res is TempC-1, recup_case(Q,Res,Case).
+recup_cases(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(D,Num_Ligne,Ligne,Num_Ligne,Num_Case,Case,Num_Case). 
+recup_cases(X,Y,Ari,Pion):- damier(W),recup_cases(W,X,Ligne,Y,[Ari|Pion]), write(Ari) . */
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% POSITIONNEMENT D UN PION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -275,14 +286,6 @@ initBoard(Joueur):- Joueur='O',  init_disposition(Joueur).
 
 
 
-/*
-recup_donnee([T|Q],0,0,A):- .
-recup_donnee([T|Q],0,Yres,A):-recup_donnee(Q.
-recup_donnee([T|Q],Xres,Y,A):- recup_donnee(Q,X,Y,A), X is Xres-1.*/
-
-
-
-/*deplacement(D,X1, Y1, X2, Y2, ND):- calc_long(X1, Y1, X2, Y2, L), recup_donnee(D,X1, Y1, A).
 
 
 
@@ -308,14 +311,65 @@ recup_donnee([T|Q],Xres,Y,A):- recup_donnee(Q,X,Y,A), X is Xres-1.*/
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEPLACEMENT D UN PION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+calc_long(X1, Y1, X2, Y2, L):- L is abs((X2-X1)+(Y2-Y1)).
+
+
+
+
+deplacement(D,X1, Y1, X2, Y2, ND, List_Move):- calc_long(X1, Y1, X2, Y2, L), recup_case(X1, Y1, Arite, Pion), L=A, write('Vous ne pouvez pas vous déplacer aussi loin').
+
+
+
+% IL PEUT REVENIR SUR SES PIED POUR L'INSTANT MAIS J4AI UNE IDEE
+
+
+%Sortie de plateau
+depl_haut(D,X,Y,List_Temp,List_Move,1):-Xres is X-1,Xres=<0,! . %INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1,Xres=<0.
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1,NX=<0.
+%
+depl_haut(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1,Xres>0,! . %INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1,Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1,NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
+
+%Sortie de plateau
+depl_bas(D,X,Y,List_Temp,List_Move,1):-Xres is X+1,Xres=<0,! . %INITIALISATION
+depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres=<0.
+depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX=<0.
+%
+depl_bas(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . %INITIALISATION
+depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
+depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
+
+depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1,Yres=<0,! . %INITIALISATION
+depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres=<0.
+depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY=<0.
+
+depl_droite(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,! . %INITIALISATION
+depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
+depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
+
+depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1,Yres=<0,! . %INITIALISATION
+depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres=<0.
+depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY=<0.
+
+depl_gauche(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y-1,Yres>0,! . %INITIALISATION
+depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
+depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
+
+
+sim_depl(D,X1,Y1, List_Temp,List_Final, Res_Dep):-depl_haut(D,X1,Y1,List_Temp,List_Move,Res_Dep) ,depl_gauche(D,X1,Y1,List_Move,List_Result,Res_Dep) , depl_bas(D,X1,Y1,List_Result,List_Result2,Res_Dep), depl_droite(D,X1,Y1,List_Result2,List_Final,Res_Dep),!.
+
 /*
-recup_donne(...).
+poss_depla(D,X1, Y1, List_Move):-recup_case(X1, Y1, Arite, Pion), sim_depl(D,X1,Y1,List_Move, Arite).
 
+deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7, poss_depla(D,X1, Y1, List_Move)
+	write('entrez la case d arrivee:'), nl, write('coordonne x2= '), read(X2),nl,X2>0,X2<7, write('coordonne y2= '), read(Y2), nl,Y2>0,Y2<7,
 
-deplacement(D,X1, Y1, X2, Y2, ND):- calc_long(X1, Y1, X2, Y2, L), recup_donnee(X1, Y1, A, L), ,.
->>>>>>> 56bde863ca16080c3b6ad43840a6832decd3ad37
+	damier(D), deplacement(D,X1, Y1, X2, Y2, ND, List_Move),retract(damier(D)), asserta(damier(ND)).*/
 
-
+/*
+a garder si jamais bug
 deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
 	write('entrez la case d arrivee:'), nl, write('coordonne x2= '), read(X2),nl,X2>0,X2<7, write('coordonne y2= '), read(Y2), nl,Y2>0,Y2<7,
 
