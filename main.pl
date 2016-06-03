@@ -43,6 +43,20 @@ damierO([	[[3,[]],[1,[]],[2,[]],[2,[]],[3,[]],[1,[]]],
 %init_disposition().
 %choix_mode().
 */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PREDICAT UTILE EN TOUT GENRE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+recup_ligne([T|_],1,T):-!.
+recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne). 
+
+recup_case([T|_],1,T):-!.
+recup_case([T|Q],Num_Case,Case):- Res is Num_Case-1, recup_case(Q,Res,Case).
+recup_case(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(Ligne,Num_Case,Case). % on passe le damier en parametre on recup la ligne
+
+recup_case(X,Y,A,P):- damier(W),recup_case(W,X,Ligne,Y,[A|P]), write(A) .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% AFFICHAGE DU DAMIER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -147,17 +161,18 @@ choix_cote(X):-cote_init(_).
 
 
 
+/*
+recup_donnee([T|Q],0,0,A):- .
+recup_donnee([T|Q],0,Yres,A):-recup_donnee(Q.
+recup_donnee([T|Q],Xres,Y,A):- recup_donnee(Q,X,Y,A), X is Xres-1.*/
 
 
-recup_donne(...).
-
-
-deplacement(D,X1, Y1, X2, Y2, ND):- calc_long(X1, Y1, X2, Y2, L), recup_donnee(X1, Y1, A, L), ,.
+/*deplacement(D,X1, Y1, X2, Y2, ND):- calc_long(X1, Y1, X2, Y2, L), recup_donnee(D,X1, Y1, A).
 
 
 deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
 	write('entrez la case d arrivee:'), nl, write('coordonne x2= '), read(X2),nl,X2>0,X2<7, write('coordonne y2= '), read(Y2), nl,Y2>0,Y2<7,
-	damier(D), deplacement(D,X1, Y1, X2, Y2, ND),retract(damier(D)), asserta(damier(ND)).
+	damier(D), deplacement(D,X1, Y1, X2, Y2, ND),retract(damier(D)), asserta(damier(ND)).*/
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -168,9 +183,9 @@ deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), r
 %entrer_coup(). 
  
 
-%khan().  dit ou est le khan
+%khan().  
 
-%pion_sorti().  dit combien de pions sont sorti pour un joueur
+%pion_sorti().  
 
 
 
