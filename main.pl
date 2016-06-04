@@ -99,7 +99,8 @@ elem_n([_|Q],N,E):- NN is N-1, elem_n(Q,NN,E).
 recreate_list(RE,[_|Q],1,[RE|Q]):-!.
 recreate_list(RE,[T|Q],V,[T|R]):- NV is V-1, recreate_list(RE,Q,NV,R).
 
-% predicat pour recup les info d'une case
+
+% predicat pour recup les info d une case
 
 recup_ligne([T|_],1,T):-!.
 recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne). 
@@ -308,50 +309,86 @@ recup_donnee([T|Q],Xres,Y,A):- recup_donnee(Q,X,Y,A), X is Xres-1.*/
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEPLACEMENT D UN PION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-/*
-recup_donne(...).
+% arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: cardinalité de la case (retour),
 
-
-deplacement(D,X1, Y1, X2, Y2, ND):- calc_long(X1, Y1, X2, Y2, L), recup_donnee(X1, Y1, A, L), ,.
->>>>>>> 56bde863ca16080c3b6ad43840a6832decd3ad37
-
-
-deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
-	write('entrez la case d arrivee:'), nl, write('coordonne x2= '), read(X2),nl,X2>0,X2<7, write('coordonne y2= '), read(Y2), nl,Y2>0,Y2<7,
-
-	damier(D), deplacement(D,X1, Y1, X2, Y2, ND),retract(damier(D)), asserta(damier(ND)).*/
-	
+checkCase('R',[N|'pR'],N).
+checkCase('R',[N|'kR'],N).
+checkCase('O',[N|'pO'],N).
+checkCase('O',[N|'kO'],N).
 
 
 
+% arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: num ligne (donnée), arg4: num colonne a 1 lors de l appel (donnée),
+% arg5: liste des pieces de cette ligne, chaque pieces etant representé par une liste [L,C]  (retour) 
+
+piecesInLine(_,[],_,_,[]):-!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(P,[T|Q],U,V,RC):- V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
 
 
 
+% arg1: Palyer (donnée), arg2: damier (donnée), arg3: num ligne a 1 lors de l appel (donnée), arg4: num colonne a 1 lors de l appel (donnée),
+% arg5: liste de tout les pieces, chaque pieces etant representé par une liste [L,C]  (retour) 
 
-
-%khan().  
-
-%pion_sorti().  
-
-
+allPeices(_,[],_,_,[]):-!.
+allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,U2,V,R), concat(PiL,R,LP),!.
 
 
 
 
-/*
 
-possibleMoves( Board , Player, PossibleMoveList )			 % uniquement pour l IA ? 
 
-*/
+
+
+
+
+
+
+
+
+Move1P(P,B,T,Res)
+
+
+
+
+
+
+% arg1: Palyer (donnée), arg2: damier (donnée), arg3: liste de coordonnée de pieces (donnée), arg4: liste de touts les moves possibles, chaque move etant une liste (retour),
+
+giveMovesAllPieces(_,_,[],[]):-!.
+giveMovesAllPieces(P,B,[T|Q],[Res|R]):- Move1P(P,B,T,Res), giveMovesAllPieces(P,B,Q,R). % comment etre sur qu on aura toutes les reponses ???
+
+
+
+
+
+
+possibleMoves(Board,Player,PossibleMoveList):- allPeices(Palyer,Board,LP), giveMovesAllPieces(Palyer,Board,LP,PossibleMoveList),!.  
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
+/*
+recup_donne(...).
 
 
+deplacement(D,X1, Y1, X2, Y2, ND):- calc_long(X1, Y1, X2, Y2, L), recup_donnee(X1, Y1, A, L), ,.
 
+
+deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+	write('entrez la case d arrivee:'), nl, write('coordonne x2= '), read(X2),nl,X2>0,X2<7, write('coordonne y2= '), read(Y2), nl,Y2>0,Y2<7,
+	damier(D), deplacement(D,X1, Y1, X2, Y2, ND),retract(damier(D)), asserta(damier(ND)).
+
+*/
+
+
+%khan().  
+
+%pion_sorti().  
 
 
 
