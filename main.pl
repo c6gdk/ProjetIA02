@@ -116,7 +116,7 @@ recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne
 recup_case([T|_],1,T).
 recup_case([T|Q],Num_Case,Case):- Res is Num_Case-1, recup_case(Q,Res,Case).
 recup_case(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(Ligne,Num_Case,Case). 
-recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari|Pion]), write(Ari) .
+recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari|Pion]) .
 
 
 
@@ -329,15 +329,28 @@ deplacement(D,X1, Y1, X2, Y2, ND, List_Move):- calc_long(X1, Y1, X2, Y2, L), rec
 
 
 
-% IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
+ % INITIALISATION
+% DEPLACEMENT!!
 
+depl(D,X,Y,[X,Y],0):-!.
+
+
+depl(D,X,Y,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NX is X+1, NX<10, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]),depl(D,X,NY,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NY is Y+1, NY<10, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
+
+sim_depl(D,X1,Y1,List_Final,Res_Dep):- depl(D,X1,Y1,List_Final,Res_Dep).
+
+% IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
+/*
 
 % Sortie de plateau
 depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!. % INITIALISATION
 depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0.
 depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
 %
-depl_haut(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
+depl_haut(D,X,Y,[],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
 depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
 depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
 
@@ -347,7 +360,7 @@ depl_bas(D,X,Y,List_Temp,List_Move,1):-Xres is X+1,Xres=<0,! . % INITIALISATION
 depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres=<0.
 depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX=<0.
 %
-depl_bas(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . % INITIALISATION
+depl_bas(D,X,Y,[],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . % INITIALISATION
 depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
 depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
 
@@ -356,7 +369,7 @@ depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1,Yres=<0,! . % INITIALISATI
 depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres=<0.
 depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY=<0.
 
-depl_droite(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,! . % INITIALISATION
+depl_droite(D,X,Y,[],[[X,Yres]],1):-Yres is Y+1,Yres>0,! . % INITIALISATION
 depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
 depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
 
@@ -365,7 +378,7 @@ depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1,Yres=<0,! . % INITIALISATI
 depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres=<0.
 depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY=<0.
 
-depl_gauche(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y-1,Yres>0,! . % INITIALISATION
+depl_gauche(D,X,Y,[],[[X,Yres]],1):-Yres is Y-1,Yres>0,! . % INITIALISATION
 depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
 depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
 
@@ -376,7 +389,7 @@ sim_depl(D,X1,Y1,List_Temp,List_Final,Res_Dep):- depl_haut(D,X1,Y1,List_Temp,Lis
 	depl_bas(D,X1,Y1,List_Result,List_Result2,Res_Dep), depl_droite(D,X1,Y1,List_Result2,List_Final,Res_Dep),!.
 
 
-
+*/
 
 /*
 poss_depla(D,X1, Y1, List_Move):-recup_case(X1, Y1, Arite, Pion), sim_depl(D,X1,Y1,List_Move, Arite).
