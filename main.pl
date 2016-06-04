@@ -99,18 +99,16 @@ elem_n([_|Q],N,E):- NN is N-1, elem_n(Q,NN,E).
 recreate_list(RE,[_|Q],1,[RE|Q]):-!.
 recreate_list(RE,[T|Q],V,[T|R]):- NV is V-1, recreate_list(RE,Q,NV,R).
 
-<<<<<<< HEAD
 
-% predicat pour recup les info d une case
-=======
-%prédicat pour verifier que N'est pas dans liste
+
+% prédicat pour verifier que N est pas dans liste
 
 no_liste(N,[]):-!.
 no_liste(N,[N|_]):-fail,!.
 
-no_liste(N,[T|Q]):-no_liste(N,Q). 
-% predicat pour recup les info d'une case
->>>>>>> 5c051de430831d8fd24e35d56a9d35d6da9cd7df
+no_liste(N,[T|Q]):-no_liste(N,Q).
+
+% predicat pour recup les info d une case
 
 recup_ligne([T|_],1,T).
 recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne). 
@@ -123,11 +121,15 @@ recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari|Pion]), write(A
 
 
 /* A garder pour reflechir a un genre de recuperation des cases possédant une arité, mais faut tout revoir du coup
+
 recup_case():-.
 recup_case(D,Num_Ligne,[T|_],TempL,Num_Case,T,1):-.
 recup_case(D,Num_Ligne,[T|Q],TempL,Num_Case,Case,TempC):- Res is TempC-1, recup_case(Q,Res,Case).
 recup_cases(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(D,Num_Ligne,Ligne,Num_Ligne,Num_Case,Case,Num_Case). 
 recup_cases(X,Y,Ari,Pion):- damier(W),recup_cases(W,X,Ligne,Y,[Ari|Pion]), write(Ari) . */
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% POSITIONNEMENT D UN PION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -320,64 +322,62 @@ calc_long(X1, Y1, X2, Y2, L):- L is abs((X2-X1)+(Y2-Y1)).
 
 
 
-<<<<<<< HEAD
-% arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: cardinalité de la case (retour),
 
-checkCase('R',[N|'pR'],N).
-checkCase('R',[N|'kR'],N).
-checkCase('O',[N|'pO'],N).
-checkCase('O',[N|'kO'],N).
-=======
+
 
 deplacement(D,X1, Y1, X2, Y2, ND, List_Move):- calc_long(X1, Y1, X2, Y2, L), recup_case(X1, Y1, Arite, Pion), L=A, write('Vous ne pouvez pas vous déplacer aussi loin').
 
 
 
-% IL PEUT REVENIR SUR SES PIED POUR L'INSTANT MAIS J4AI UNE IDEE
+% IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
 
 
-%Sortie de plateau
-depl_haut(D,X,Y,List_Temp,List_Move,1):-Xres is X-1,Xres=<0,! . %INITIALISATION
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1,Xres=<0.
-depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1,NX=<0.
+% Sortie de plateau
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!. % INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0.
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
 %
-depl_haut(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1,Xres>0,! . %INITIALISATION
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1,Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
-depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1,NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
+depl_haut(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
 
-%Sortie de plateau
-depl_bas(D,X,Y,List_Temp,List_Move,1):-Xres is X+1,Xres=<0,! . %INITIALISATION
+
+% Sortie de plateau
+depl_bas(D,X,Y,List_Temp,List_Move,1):-Xres is X+1,Xres=<0,! . % INITIALISATION
 depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres=<0.
 depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX=<0.
 %
-depl_bas(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . %INITIALISATION
+depl_bas(D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . % INITIALISATION
 depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
 depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
 
-depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1,Yres=<0,! . %INITIALISATION
+
+depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1,Yres=<0,! . % INITIALISATION
 depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres=<0.
 depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY=<0.
 
-depl_droite(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,! . %INITIALISATION
+depl_droite(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,! . % INITIALISATION
 depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
 depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
 
-depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1,Yres=<0,! . %INITIALISATION
+
+depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1,Yres=<0,! . % INITIALISATION
 depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres=<0.
 depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY=<0.
 
-depl_gauche(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y-1,Yres>0,! . %INITIALISATION
+depl_gauche(D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y-1,Yres>0,! . % INITIALISATION
 depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
 depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
->>>>>>> 5c051de430831d8fd24e35d56a9d35d6da9cd7df
 
 
-sim_depl(D,X1,Y1, List_Temp,List_Final, Res_Dep):-depl_haut(D,X1,Y1,List_Temp,List_Move,Res_Dep) ,depl_gauche(D,X1,Y1,List_Move,List_Result,Res_Dep) , depl_bas(D,X1,Y1,List_Result,List_Result2,Res_Dep), depl_droite(D,X1,Y1,List_Result2,List_Final,Res_Dep),!.
 
-<<<<<<< HEAD
-% arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: num ligne (donnée), arg4: num colonne a 1 lors de l appel (donnée),
-% arg5: liste des pieces de cette ligne, chaque pieces etant representé par une liste [L,C]  (retour) 
-=======
+
+sim_depl(D,X1,Y1,List_Temp,List_Final,Res_Dep):- depl_haut(D,X1,Y1,List_Temp,List_Move,Res_Dep), depl_gauche(D,X1,Y1,List_Move,List_Result,Res_Dep),
+	depl_bas(D,X1,Y1,List_Result,List_Result2,Res_Dep), depl_droite(D,X1,Y1,List_Result2,List_Final,Res_Dep),!.
+
+
+
+
 /*
 poss_depla(D,X1, Y1, List_Move):-recup_case(X1, Y1, Arite, Pion), sim_depl(D,X1,Y1,List_Move, Arite).
 
@@ -390,7 +390,38 @@ deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), r
 a garder si jamais bug
 deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
 	write('entrez la case d arrivee:'), nl, write('coordonne x2= '), read(X2),nl,X2>0,X2<7, write('coordonne y2= '), read(Y2), nl,Y2>0,Y2<7,
->>>>>>> 5c051de430831d8fd24e35d56a9d35d6da9cd7df
+
+
+% COMMENTS DU CODE DES DEPLACEMENTS
+
+% idée stylée je suis pas parti la dessus du tout ! j avais basé mon raisonnement sur les arrités, pas les sens possibles. 
+
+% pas gestion des obstacles
+% dans sim_depl on commence toujour par monter ?
+% quand une des fonctions de deplacement lateral appelle sim_depl, ca remonte... donc on fait que monter jusqu a la fin de l arite...
+% ca risque pas de grave bugger parce qu on impose un passage haut, gauche, bas, droit,  a un chemin qui a au max une arrité de trois et 
+% qui par conséquent ne pourra pas les faire tous ? apres je sais que dans ce cas ca ne fait rien mais l appel est useless 
+% surtout si on fait genre trois appels imbriqué ca fait : 3 fois deplacement haut, puis: gauche (RAS -> sortie), bas (sortie), droite (sortie) et ca trois fois !
+% donc 9 operations useless pour tois deplacement vers le haut... 
+
+% apres j ai peut etre pas compris un truc ou 2... en vrai c est une bonne idee.
+% etant donne que je comprend pas comment tu peut generer tout les chamins (je me doute que cest grace au backtracking... mais...), je ne sais pas trop
+
+
+
+
+
+% arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: cardinalité de la case (retour),
+
+checkCase('R',[N|'pR'],N).
+checkCase('R',[N|'kR'],N).
+checkCase('O',[N|'pO'],N).
+checkCase('O',[N|'kO'],N).
+
+
+
+% arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: num ligne (donnée), arg4: num colonne a 1 lors de l appel (donnée),
+% arg5: liste des pieces de cette ligne, chaque pieces etant representé par une liste [L,C]  (retour) 
 
 piecesInLine(_,[],_,_,[]):-!.
 piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
@@ -413,10 +444,6 @@ allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,
 
 
 
-
-
-
-
 Move1P(P,B,T,Res)
 
 
@@ -428,9 +455,6 @@ Move1P(P,B,T,Res)
 
 giveMovesAllPieces(_,_,[],[]):-!.
 giveMovesAllPieces(P,B,[T|Q],[Res|R]):- Move1P(P,B,T,Res), giveMovesAllPieces(P,B,Q,R). % comment etre sur qu on aura toutes les reponses ???
-
-
-
 
 
 
