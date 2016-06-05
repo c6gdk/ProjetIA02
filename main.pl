@@ -332,7 +332,7 @@ deplacement(D,X1, Y1, X2, Y2, ND, List_Move):- calc_long(X1, Y1, X2, Y2, L), rec
 */
 
 
-%checkObstacle(D,X,Y):- find_case(D,X,Y,[_|[]]). % regarde si la queue de la case est vide, si oui le predicat s efface
+% checkObstacle(D,X,Y):- find_case(D,X,Y,[_|[]]). % regarde si la queue de la case est vide, si oui le predicat s efface
 
 % INITIALISATION
 % DEPLACEMENT!!
@@ -342,7 +342,7 @@ depl(D,X,Y,[X,Y],0):-!.
 
 depl(D,X,Y,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
 depl(D,X,Y,List_Move,Res_Dep):-NX is X+1, NX<10, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]),depl(D,X,NY,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
 depl(D,X,Y,List_Move,Res_Dep):-NY is Y+1, NY<10, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
 
 
@@ -353,53 +353,39 @@ deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), r
 		damier(D),recup_case(X1,Y1,A,P),sim_depl(D,X1,Y1,List_Final,A),write(List_Final),!. %retract(damier(D)), asserta(damier(ND)).
 
 % IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
-/*
 
-% Sortie de plateau
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!. % INITIALISATION
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0.
-depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
-%
-depl_haut(D,X,Y,[],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
-depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
-=======
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|'pO']),!.
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|'kO']),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
+
+
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,'pO']),!.
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,'kO']),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
 														% si la kalista du joueur qui va jouer son tour est encore la, sinon, il perd, l autre gagne... EZ
 
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'pR']),!.
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'kR']),!.	% idem
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'pR']),!.
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'kR']),!.	% idem
 
->>>>>>> d47a88006515eb72b33685de7c05ef31c7229c27
 
+
+/*
+test(_):- damier(X), write('ok'). % friendlyFire('O',X, 1,1).
 
 % Sortie de plateau
 depl_haut(P,D,X,Y,[],List_Move,1):- Xres is X-1, Xres=<0,!. 					% INITIALISATION
 depl_haut(P,D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!.
 depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
 %
-<<<<<<< HEAD
-depl_bas(D,X,Y,[],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . % INITIALISATION
-depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
-depl_bas(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
-=======
+
+
 depl_haut(P,D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. 			% INITIALISATION
 depl_haut(P,D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, friendlyFire(P,D,Xres,Y), concat([[Xres,Y]],List_Temp,List_Move),!.
 depl_haut(P,D,X,Y,List_Temp,List_Move,1),!. 	% si la case d arrivee est une case alliée, on kill pas l allié.
->>>>>>> d47a88006515eb72b33685de7c05ef31c7229c27
 
 depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,NX,Y,List_Temp,List_Move,Res),!.		% si pas d obstacle
 depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
 
 
-<<<<<<< HEAD
-depl_droite(D,X,Y,[],[[X,Yres]],1):-Yres is Y+1,Yres>0,! . % INITIALISATION
-depl_droite(D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
-depl_droite(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
-=======
+
 % Sortie de plateau
 depl_bas(P,D,X,Y,[],List_Move,1):-Xres is X+1, Xres>6,!.						% INITIALISATION 
 depl_bas(P,D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>6,!.
@@ -408,21 +394,16 @@ depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>6.
 depl_bas(P,D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . 			% INITIALISATION
 depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, friendlyFire(P,D,Xres,Y), concat([[Xres,Y]],List_Temp,List_Move),!.
 depl_bas(D,X,Y,List_Temp,List_Move,1),!.
->>>>>>> d47a88006515eb72b33685de7c05ef31c7229c27
 
 depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,NX,Y,List_Temp,List_Move,Res),!.		% si pas d obstacle
 depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
 
 
-<<<<<<< HEAD
-depl_gauche(D,X,Y,[],[[X,Yres]],1):-Yres is Y-1,Yres>0,! . % INITIALISATION
-depl_gauche(D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres>0, concat([[X,Yres]],List_Temp,List_Move).
-depl_gauche(D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1 , sim_depl(D,X,NY,List_Temp,List_Move,Res).
-=======
+
 depl_droite(P,D,X,Y,[],List_Move,1):-Yres is Y+1,Yres>6,! . 					% INITIALISATION
 depl_droite(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>6,!.
 depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>6.
->>>>>>> d47a88006515eb72b33685de7c05ef31c7229c27
+
 
 depl_droite(P,D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,!. 			% INITIALISATION
 depl_droite(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, friendlyFire(P,D,X,Yres), concat([[X,Yres]],List_Temp,List_Move),!.
@@ -445,7 +426,6 @@ depl_gauche(P,D,X,Y,List_Temp,List_Move,1),!.
 depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,X,NY,List_Temp,List_Move,Res),!.		% si pas d obstacle
 depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
 
->>>>>>> d47a88006515eb72b33685de7c05ef31c7229c27
 
 
 
@@ -454,6 +434,8 @@ sim_depl(P,D,X1,Y1,List_Temp,List_Final,Res_Dep):- depl_haut(P,D,X1,Y1,List_Temp
 
 
 */
+
+
 
 % arg1: element a retirer (donnée), arg2: liste dans laquelle retirer tous les X (donnée), arg3: liste purifiée (retour)
 
