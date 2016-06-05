@@ -92,7 +92,7 @@ concat([X|Q],L,[X|R]):-concat(Q,L,R).
 
 % arg1: liste ds laquelle on recheche le nieme elem (donnée), arg2: N (donnée), arg3: elem trouvé (retour)
 
-elem_n([T|_],1,T).										% on met un cut là ???? 
+elem_n([T|_],1,T):-!.										% on met un cut là ???? 
 elem_n([_|Q],N,E):- NN is N-1, elem_n(Q,NN,E).
 
 
@@ -125,9 +125,17 @@ recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne
 recup_case([T|_],1,T).
 recup_case([T|Q],Num_Case,Case):- Res is Num_Case-1, recup_case(Q,Res,Case).
 recup_case(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(Ligne,Num_Case,Case). 
-recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari|Pion]) .
+recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari,Pion]) .
 
 
+
+
+
+efface_pion(0,1,[[X1,Y1]|D],[[X1,[]]|D],Q,Q):-!.
+efface_pion(1,1,[[X1,Y1]|D],[[X1,[]]|D],Q,Q):-!.
+efface_pion(0,Y,[Te|Qe],[Te|New_Ligne],Q,Q):- Yres is Y-1, efface_pion(0,Yres,Qe,New_Ligne,Q,Q),!.
+efface_pion(1,Y,Ligne,New_Ligne,[T|Q],[New_Ligne|Q]):- Ligne = T, efface_pion(0,Y,Ligne,New_Ligne,Q,Q),!.
+efface_pion(X,Y,Ligne,New_Ligne,[T|Q],[T|ND]):- Xres is X-1, efface_pion(Xres,Y,Ligne,New_Ligne,Q,ND).
 
 /* A garder pour reflechir a un genre de recuperation des cases possédant une arité, mais faut tout revoir du coup
 
@@ -147,8 +155,8 @@ recup_cases(X,Y,Ari,Pion):- damier(W),recup_cases(W,X,Ligne,Y,[Ari|Pion]), write
 % arg1: couleur joueur (donnée), arg2: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), 
 % arg3: on met la valeur 'k' pour kalista dans la queue et on remet la tete (case retour)
 
-changeP('R',[T|Q],[T|'pR'], 0):- vide(Q),!.
-changeP('O',[T|Q],[T|'pO'], 0):- vide(Q),!.
+changeP('R',[T|Q],[T,'pR'], 0):- vide(Q),!.
+changeP('O',[T|Q],[T,'pO'], 0):- vide(Q),!.
 changeP(_,_,_, -1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
@@ -202,8 +210,8 @@ positionner(J):- damier(X),  write('entrez les coordonees de la case du pion:'),
 % arg1: couleur joueur (donnée), arg2: la case du damier, on verifie que sa queue est vide, et on prend la tete (donnée), 
 % arg3: on met la valeur 'k' pour kalista dans la queue et on remet la tete (case retour)
 
-changeK('R',[T|Q],[T|'kR'], 0):- vide(Q),!.
-changeK('O',[T|Q],[T|'kO'], 0):- vide(Q),!.
+changeK('R',[T|Q],[T,'kR'], 0):- vide(Q),!.
+changeK('O',[T|Q],[T,'kO'], 0):- vide(Q),!.
 changeK(_,_,_,-1):-!. 		% on renvoie -1 en code d erreur pour dire que Q est pas vide et donc qu il y deja un pion a la place
 
 
@@ -330,30 +338,111 @@ initBoard(Joueur):- Joueur='O',  init_disposition(Joueur).
 calc_long(X1, Y1, X2, Y2, L):- L is abs((X2-X1)+(Y2-Y1)).
 deplacement(D,X1, Y1, X2, Y2, ND, List_Move):- calc_long(X1, Y1, X2, Y2, L), recup_case(X1, Y1, Arite, Pion), L=A, write('Vous ne pouvez pas vous déplacer aussi loin').
 */
+friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'pR'),!.
+friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'kR'),!. 	
+
+friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'kO'),!.
+friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'pO'),!.
 
 
 % checkObstacle(D,X,Y):- find_case(D,X,Y,[_|[]]). % regarde si la queue de la case est vide, si oui le predicat s efface
 
-% INITIALISATION
-% DEPLACEMENT!!
+/*
+
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|['pO']]),!.
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|['kO']]),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
+														% si la kalista du joueur qui va jouer son tour est encore la, sinon, il perd, l autre gagne... EZ
+	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'pO']),fail,!.
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'kO']),fail,!.
+
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'pR']),!.
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'kR']),!.	% idem */
+
+%tcheque de la couleur du pion cibler
+
+bonne_couleur('kO','O').
+bonne_couleur('pO','O').
+
+bonne_couleur('kR','R').
+bonne_couleur('pR','R').
+
+
+
+afficher_list([],N):-!.
+afficher_list([T|Q],N):- write(N),write(' : '),write(T),nl,Nres is N+1, afficher_list(Q,Nres).
+
+retire_list(A,Couleur,D,[],[]):- !.
+
+retire_list(A,Couleur,D,[A|Q],P):- retire_list(A,Couleur,D,Q,P),!.
+
+%retire_list(A,Couleur,D,[[X1,Y1]|Q],[M|P]):- \+friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P).
+retire_list(A,Couleur,D,[[X1,Y1]|Q],P):-friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P),!.
+retire_list(A,Couleur,D,[[X1,Y1]|Q],[M|P]):-  M = [X1,Y1],\+friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P).
+
+
+% Modifie le damier en 2 etapes insertion nouvelle position effacement ancienne
+modif_damier(X1,Y1,[],Pion,C,D,ND):-!. %cas mauvaise entrée
+
+modif_damier(X1,Y1,[[NX,NY]|Q],'kO',1,D,ND):-find_lineK('O',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
+modif_damier(X1,Y1,[[NX,NY]|Q],'pO',1,D,ND):-find_line('O',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
+
+modif_damier(X1,Y1,[[NX,NY]|Q],'kR',1,D,ND):-find_linek('R',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
+modif_damier(X1,Y1,[[NX,NY]|Q],'pR',1,D,ND):-find_line('R',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
+
+modif_damier(X1,Y1,[T|Q],Pion,C,D,ND):- Res is C-1, modif_damier(X1,Y1,Q,Pion,Res,D,ND).
+
+
+
 
 depl(D,X,Y,[X,Y],0):-!.
 
 
+<<<<<<< HEAD
 depl(D,X,Y,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
 depl(D,X,Y,List_Move,Res_Dep):-NX is X+1, NX<10, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
 depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
 depl(D,X,Y,List_Move,Res_Dep):-NY is Y+1, NY<10, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
+=======
+depl(D,X,Y,List_Move,1):-NX is X-1, NX>0, depl(D,NX,Y,List_Move,0).
+depl(D,X,Y,List_Move,1):-NX is X+1, NX<7, depl(D,NX,Y,List_Move,0).
+depl(D,X,Y,List_Move,1):-NY is Y-1, NY>0, depl(D,X,NY,List_Move,0).
+depl(D,X,Y,List_Move,1):-NY is Y+1, NY<7, depl(D,X,NY,List_Move,0).
+>>>>>>> f5d7fca4aaa62495c59646c22f7578401e2cdbd7
 
+depl(D,X,Y,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(D,NX,Y,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(D,NX,Y,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]),depl(D,X,NY,List_Move,Res).
+depl(D,X,Y,List_Move,Res_Dep):-NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(D,X,NY,List_Move,Res).
 
 sim_depl(D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(D,X1,Y1,Result,Res_Dep),List_Final). % retourne sous forme de liste les déplacement possible ;D
 
+/*deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+		damier(D),recup_case(X1,Y1,A,[[]]),write("Erreur il n'a pas de pion"),!. % a modifier si le pion est de la bonne couleur*/
 
-deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
-		damier(D),recup_case(X1,Y1,A,P),sim_depl(D,X1,Y1,List_Final,A),write(List_Final),!. %retract(damier(D)), asserta(damier(ND)).
+
+/* A GARDER Si BUG DE CELLE DU DESSOUS
+deplacer(P):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+		damier(D),recup_case(X1,Y1,A,Pion),sim_depl(D,X1,Y1,Temp,A), retire_list([X1,Y1],P,D,Temp,List_Final) ,write('deplacement possible: '),nl,afficher_list(List_Final,1),nl,write('Numero du deplacement: '),
+		read(C),nl, modif_damier(X1,Y1,List_Final,Pion,C,D,ND),retract(damier(D)), asserta(damier(ND)),!.*/
+
+
+deplacement(P,D,X1,Y1,A,Pion):- \+bonne_couleur(Pion,P),write('erreur: pion inexistant ou mauvaise couleur'),nl,deplacer(P),!. %si jamais mauvaise couleur
+deplacement(P,D,X1,Y1,A,Pion):- bonne_couleur(Pion,P),sim_depl(D,X1,Y1,Temp,A), retire_list([X1,Y1],P,D,Temp,List_Final) ,write('deplacement possible: '),nl,afficher_list(List_Final,1),nl,write('Numero du deplacement: '),
+		read(C),nl, modif_damier(X1,Y1,List_Final,Pion,C,D,Temp2),efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)),!.%
+
+deplacer(P):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+		damier(D),recup_case(X1,Y1,A,Pion),deplacement(P,D,X1,Y1,A,Pion),!.
+
+
+
+		%,recup_ligne(List_Final,C,Pos_final),!. %retract(damier(D)), asserta(damier(ND)). % il reste a lire la selection du joueur et modifier le damier
 
 % IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
 
+<<<<<<< HEAD
 
 
 friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
@@ -365,6 +454,18 @@ friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un a
 friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'pR']),!.
 friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'kR']),!.	% idem
 
+=======
+% Sortie de plateau
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!. % INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0.
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
+%
+depl_haut(D,X,Y,[],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
+=======
+
+>>>>>>> f5d7fca4aaa62495c59646c22f7578401e2cdbd7
 
 
 /*
