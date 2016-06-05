@@ -338,30 +338,51 @@ initBoard(Joueur):- Joueur='O',  init_disposition(Joueur).
 calc_long(X1, Y1, X2, Y2, L):- L is abs((X2-X1)+(Y2-Y1)).
 deplacement(D,X1, Y1, X2, Y2, ND, List_Move):- calc_long(X1, Y1, X2, Y2, L), recup_case(X1, Y1, Arite, Pion), L=A, write('Vous ne pouvez pas vous déplacer aussi loin').
 */
-friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'pR'),!.
-friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'kR'),!. 	
-
-friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'kO'),!.
-friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'pO'),!.
-
 
 % checkObstacle(D,X,Y):- find_case(D,X,Y,[_|[]]). % regarde si la queue de la case est vide, si oui le predicat s efface
 
 /*
 
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|['pO']]),!.
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_|['kO']]),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
-														% si la kalista du joueur qui va jouer son tour est encore la, sinon, il perd, l autre gagne... EZ
-	% si ca tombe pas sur un allié le predicat s efface
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'pO']),fail,!.
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'kO']),fail,!.
+friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'pR'),!.
+friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'kR'),!. 	
 
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'pR']),!.
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_|'kR']),!.	% idem */
+friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'kO'),!.
+friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'pO'),!.
+*/
 
-%tcheque de la couleur du pion cibler
+
+/*
+deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+		damier(D),recup_case(X1,Y1,A,[[]]),write("Erreur il n'a pas de pion"),!. % a modifier si le pion est de la bonne couleur
+
+
+
+
+
+A GARDER Si BUG DE CELLE DU DESSOUS
+deplacer(P):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+		damier(D),recup_case(X1,Y1,A,Pion), sim_depl(D,X1,Y1,Temp,A), retire_list([X1,Y1],P,D,Temp,List_Final) ,write('deplacement possible: '),nl,afficher_list(List_Final,1),nl,write('Numero du deplacement: '),
+		read(C),nl, modif_damier(X1,Y1,List_Final,Pion,C,D,ND), retract(damier(D)), asserta(damier(ND)),!.
+
+
+
+deplacement(P,D,X1,Y1,A,Pion):- \+bonne_couleur(Pion,P),write('erreur: pion inexistant ou mauvaise couleur'),nl,deplacer(P),!. % si jamais mauvaise couleur
+deplacement(P,D,X1,Y1,A,Pion):- /*bonne_couleur(Pion,P), */ sim_depl(D,X1,Y1,Temp,A), retire_list([X1,Y1],P,D,Temp,List_Final) ,write('deplacement possible: '),nl,
+afficher_list(List_Final,1),nl,write('Numero du deplacement: '), read(C),nl, modif_damier(X1,Y1,List_Final, Pion,C,D,Temp2), 
+efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)),!.%
+
+deplacer(P):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
+		damier(D),recup_case(X1,Y1,A,Pion),deplacement(P,D,X1,Y1,A,Pion),!.
+
+
+
+% recup_ligne(List_Final,C,Pos_final),!. % retract(damier(D)), asserta(damier(ND)). % il reste a lire la selection du joueur et modifier le damier
+
+*/
+
+/*
+
+% tcheque de la couleur du pion cibler
 
 bonne_couleur('kO','O').
 bonne_couleur('pO','O').
@@ -369,8 +390,9 @@ bonne_couleur('pO','O').
 bonne_couleur('kR','R').
 bonne_couleur('pR','R').
 
+*/
 
-
+/*
 afficher_list([],N):-!.
 afficher_list([T|Q],N):- write(N),write(' : '),write(T),nl,Nres is N+1, afficher_list(Q,Nres).
 
@@ -378,15 +400,14 @@ retire_list(A,Couleur,D,[],[]):- !.
 
 retire_list(A,Couleur,D,[A|Q],P):- retire_list(A,Couleur,D,Q,P),!.
 
-%retire_list(A,Couleur,D,[[X1,Y1]|Q],[M|P]):- \+friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P).
-retire_list(A,Couleur,D,[[X1,Y1]|Q],P):-friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P),!.
+%retire_list(A,Couleur,D,[[X1,Y1]|Q],[M|P]):- \+ friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P).
+retire_list(A,Couleur,D,[[X1,Y1]|Q],P):- friendlyFire(Couleur,D,X1,Y1), retire_list(A,Couleur,D,Q,P),!.
 retire_list(A,Couleur,D,[[X1,Y1]|Q],[M|P]):-  M = [X1,Y1],\+friendlyFire(Couleur,D,X1,Y1),retire_list(A,Couleur,D,Q,P).
-
 
 % Modifie le damier en 2 etapes insertion nouvelle position effacement ancienne
 modif_damier(X1,Y1,[],Pion,C,D,ND):-!. %cas mauvaise entrée
 
-modif_damier(X1,Y1,[[NX,NY]|Q],'kO',1,D,ND):-find_lineK('O',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
+modif_damier(X1,Y1,[[NX,NY]|Q],'kO',1,D,ND):-find_linek('O',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
 modif_damier(X1,Y1,[[NX,NY]|Q],'pO',1,D,ND):-find_line('O',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
 
 modif_damier(X1,Y1,[[NX,NY]|Q],'kR',1,D,ND):-find_linek('R',NX,NY,D,ND,C),!. % je recup le choix de la poss, 
@@ -394,171 +415,56 @@ modif_damier(X1,Y1,[[NX,NY]|Q],'pR',1,D,ND):-find_line('R',NX,NY,D,ND,C),!. % je
 
 modif_damier(X1,Y1,[T|Q],Pion,C,D,ND):- Res is C-1, modif_damier(X1,Y1,Q,Pion,Res,D,ND).
 
+*/
 
+.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEPLACEMENT D UN PION SUITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-depl(D,X,Y,[X,Y],0):-!.
-
-
-<<<<<<< HEAD
-depl(D,X,Y,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NX is X+1, NX<10, Res is Res_Dep-1 ,recup_case(NX,Y,A,[[]]), depl(D,NX,Y,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NY is Y+1, NY<10, Res is Res_Dep-1 ,recup_case(X,NY,A,[[]]), depl(D,X,NY,List_Move,Res).
-=======
-depl(D,X,Y,List_Move,1):-NX is X-1, NX>0, depl(D,NX,Y,List_Move,0).
-depl(D,X,Y,List_Move,1):-NX is X+1, NX<7, depl(D,NX,Y,List_Move,0).
-depl(D,X,Y,List_Move,1):-NY is Y-1, NY>0, depl(D,X,NY,List_Move,0).
-depl(D,X,Y,List_Move,1):-NY is Y+1, NY<7, depl(D,X,NY,List_Move,0).
->>>>>>> f5d7fca4aaa62495c59646c22f7578401e2cdbd7
-
-depl(D,X,Y,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(D,NX,Y,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(D,NX,Y,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]),depl(D,X,NY,List_Move,Res).
-depl(D,X,Y,List_Move,Res_Dep):-NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(D,X,NY,List_Move,Res).
-
-sim_depl(D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(D,X1,Y1,Result,Res_Dep),List_Final). % retourne sous forme de liste les déplacement possible ;D
-
-/*deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
-		damier(D),recup_case(X1,Y1,A,[[]]),write("Erreur il n'a pas de pion"),!. % a modifier si le pion est de la bonne couleur*/
-
-
-/* A GARDER Si BUG DE CELLE DU DESSOUS
-deplacer(P):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
-		damier(D),recup_case(X1,Y1,A,Pion),sim_depl(D,X1,Y1,Temp,A), retire_list([X1,Y1],P,D,Temp,List_Final) ,write('deplacement possible: '),nl,afficher_list(List_Final,1),nl,write('Numero du deplacement: '),
-		read(C),nl, modif_damier(X1,Y1,List_Final,Pion,C,D,ND),retract(damier(D)), asserta(damier(ND)),!.*/
-
-
-deplacement(P,D,X1,Y1,A,Pion):- \+bonne_couleur(Pion,P),write('erreur: pion inexistant ou mauvaise couleur'),nl,deplacer(P),!. %si jamais mauvaise couleur
-deplacement(P,D,X1,Y1,A,Pion):- bonne_couleur(Pion,P),sim_depl(D,X1,Y1,Temp,A), retire_list([X1,Y1],P,D,Temp,List_Final) ,write('deplacement possible: '),nl,afficher_list(List_Final,1),nl,write('Numero du deplacement: '),
-		read(C),nl, modif_damier(X1,Y1,List_Final,Pion,C,D,Temp2),efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)),!.%
-
-deplacer(P):- write('entrez la case de depart:'), nl, write('coordonne x1= '), read(X1),nl,X1>0,X1<7, write('coordonne y1= '), read(Y1),nl,Y1>0,Y1<7,
-		damier(D),recup_case(X1,Y1,A,Pion),deplacement(P,D,X1,Y1,A,Pion),!.
-
-
-
-		%,recup_ligne(List_Final,C,Pos_final),!. %retract(damier(D)), asserta(damier(ND)). % il reste a lire la selection du joueur et modifier le damier
-
-% IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
-
-<<<<<<< HEAD
+%
+%friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!.
 
 
 friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,'pO']),!.
-friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,'kO']),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,['pO']]),!.
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,['kO']]),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
 														% si la kalista du joueur qui va jouer son tour est encore la, sinon, il perd, l autre gagne... EZ
+
 
 friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
 friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'pR']),!.
-friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'kR']),!.	% idem
-
-=======
-% Sortie de plateau
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!. % INITIALISATION
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0.
-depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
-%
-depl_haut(D,X,Y,[],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
-depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
-depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
-=======
-
->>>>>>> f5d7fca4aaa62495c59646c22f7578401e2cdbd7
-
-
-/*
-test(_):- damier(X), write('ok'). % friendlyFire('O',X, 1,1).
-
-% Sortie de plateau
-depl_haut(P,D,X,Y,[],List_Move,1):- Xres is X-1, Xres=<0,!. 					% INITIALISATION
-depl_haut(P,D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!.
-depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
-%
-
-
-depl_haut(P,D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. 			% INITIALISATION
-depl_haut(P,D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, friendlyFire(P,D,Xres,Y), concat([[Xres,Y]],List_Temp,List_Move),!.
-depl_haut(P,D,X,Y,List_Temp,List_Move,1),!. 	% si la case d arrivee est une case alliée, on kill pas l allié.
-
-depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,NX,Y,List_Temp,List_Move,Res),!.		% si pas d obstacle
-depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'kR']),!.	% idem 
 
 
 
-% Sortie de plateau
-depl_bas(P,D,X,Y,[],List_Move,1):-Xres is X+1, Xres>6,!.						% INITIALISATION 
-depl_bas(P,D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>6,!.
-depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>6.
-%
-depl_bas(P,D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . 			% INITIALISATION
-depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, friendlyFire(P,D,Xres,Y), concat([[Xres,Y]],List_Temp,List_Move),!.
-depl_bas(D,X,Y,List_Temp,List_Move,1),!.
+% tout simplement : ici on verifie que la case sur laquelle on arrive n est pas une case avec un pion allié dessus, sinon faux
 
-depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,NX,Y,List_Temp,List_Move,Res),!.		% si pas d obstacle
-depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+depl(P,D,X,Y,[X,Y],0):- friendlyFire(P,D,X,Y),!.
+depl(P,D,X,Y,List_Move,1):- NX is X-1, NX>0, depl(P,D,NX,Y,List_Move,0).
+depl(P,D,X,Y,List_Move,1):- NX is X+1, NX<7, depl(P,D,NX,Y,List_Move,0).
+depl(P,D,X,Y,List_Move,1):- NY is Y-1, NY>0, depl(P,D,X,NY,List_Move,0).
+depl(P,D,X,Y,List_Move,1):- NY is Y+1, NY<7, depl(P,D,X,NY,List_Move,0).
 
+depl(P,D,X,Y,List_Move,Res_Dep):- NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(P,D,NX,Y,List_Move,Res).
+depl(P,D,X,Y,List_Move,Res_Dep):- NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(P,D,NX,Y,List_Move,Res).
+depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res).
+depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res).
 
-
-depl_droite(P,D,X,Y,[],List_Move,1):-Yres is Y+1,Yres>6,! . 					% INITIALISATION
-depl_droite(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>6,!.
-depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>6.
-
-
-depl_droite(P,D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,!. 			% INITIALISATION
-depl_droite(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, friendlyFire(P,D,X,Yres), concat([[X,Yres]],List_Temp,List_Move),!.
-depl_droite(P,D,X,Y,List_Temp,List_Move,1),!.
-
-depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,X,NY,List_Temp,List_Move,Res),!.		% si pas d obstacle
-depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
-
-
-depl_gauche(P,D,X,Y,[],List_Move,1):-Yres is Y-1,Yres=<0,!.					% INITIALISATION
-depl_gauche(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres=<0,!.
-depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY=<0.
-
-depl_gauche(P,D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y-1,Yres>0,!.			% INITIALISATION 
-depl_gauche(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres>0, friendlyFire(P,D,X,Yres), concat([[X,Yres]],List_Temp,List_Move),!.
-depl_gauche(P,D,X,Y,List_Temp,List_Move,1),!.
-
-
-
-depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,X,NY,List_Temp,List_Move,Res),!.		% si pas d obstacle
-depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+sim_depl(D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(D,X1,Y1,Result,Res_Dep),List_Final).
 
 
 
 
-sim_depl(P,D,X1,Y1,List_Temp,List_Final,Res_Dep):- depl_haut(P,D,X1,Y1,List_Temp,List_Move,Res_Dep), depl_gauche(P,D,X1,Y1,List_Move,List_Result,Res_Dep),
-	depl_bas(P,D,X1,Y1,List_Result,List_Result2,Res_Dep), depl_droite(P,D,X1,Y1,List_Result2,List_Final,Res_Dep),!.
 
-
-*/
-
-
-
-% arg1: element a retirer (donnée), arg2: liste dans laquelle retirer tous les X (donnée), arg3: liste purifiée (retour)
-
-throwElements(_,[],[]).
-throwElements(X,[X|Q],Res):- throwElements(X,Q,Res),!.
-throwElements(X,[T|Q],[T|Res]):- throwElements(X,Q,Res).
-
-
-% retire les doublons de la liste des cases d arrivé possibles
-
-throwSameSquares([],[]).
-throwSameSquares([T|Q],[T|R]):- throwElements(T,Q,Res), throwSameSquares(Res,R).
-
+%Khan(,ArImpose):-
 
 
 % arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: cardinalité de la case (retour),
 
-checkCase('R',[N|'pR'],N).
-checkCase('R',[N|'kR'],N).
-checkCase('O',[N|'pO'],N).
-checkCase('O',[N|'kO'],N).
-
+checkCase('R',[N,'pR'],N).
+checkCase('R',[N,'kR'],N).
+checkCase('O',[N,'pO'],N).
+checkCase('O',[N,'kO'],N).
 
 
 % arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: num ligne (donnée), arg4: num colonne a 1 lors de l appel (donnée),
@@ -579,9 +485,10 @@ allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,
 
 
 
-% on met les coordonées du pion en question au debut de sa liste de moves possibles et donne l arite
+% on met les coordonées du pion en question au debut de sa liste de moves possibles et donne l arite, 
+% cela permettera lors de laffichage de comprendre a quel pion on a affaire
 
-movePiece(P,B,[N,X,Y],[[X,Y]|Res]):- sim_depl(P,B,X,Y,List_Temp,List_Final,N), throwSameSquares(List_Final,Res),write(PossibleMoveList),!.
+movePiece(P,B,[N,X,Y],[[X,Y]|Res]):- sim_depl(P,B,X,Y,List_Temp,Res,N),!.
 
 
 
@@ -590,12 +497,52 @@ movePiece(P,B,[N,X,Y],[[X,Y]|Res]):- sim_depl(P,B,X,Y,List_Temp,List_Final,N), t
 giveMovesAllPieces(_,_,[],[]):-!.
 giveMovesAllPieces(P,B,[T|Q],[Res|R]):- movePiece(P,B,T,Res), giveMovesAllPieces(P,B,Q,R).
 
-
-
 possibleMoves(Board,Player,PossibleMoveList):- allPeices(Palyer,Board,LP), giveMovesAllPieces(Palyer,Board,LP,PossibleMoveList),!.  
 
-% just pour try.
-appelP(_):- damier(X), possibleMoves(X,'R',L).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+nomJoueur('O'):- write('Joueur Ocre'), nl.
+nomJoueur('R'):- write('Joueur Rouge'), nl.
+
+% voila la forme de la liste PossibleMovesListe:
+% [ 
+%	[ [coPion1] [ [coMove1] [coMove2] [coMovei] ] ]
+%	[ [coPion2] [ [coMove1] [coMove2] [coMovei] ] ]
+%	[ [coPioni] [ [coMove1] [coMove2] [coMovei] ] ]
+% ]
+
+
+affichePossibi(_,[]):-!.
+affichePossibi(N,[T|Q]):- write('Possibilite num: '), write(N), write(' : '), write(T), nl, NN is N+1, affichePossibi(NN,Q).
+
+
+compte([],N,N),!.
+compte([_|Q],N,NbP):- Nb is N+1, compte(Q,Nb,NbP),!.
+
+affichageParPion(0,_,_):- nl, write('fin de la liste des possibilites'),!.
+affichageParPion(NbP,Np,PML):- elem_n(PML,NbP,[T,Q]), write('Pour la piece num:'), write(Np), write('. de coordonnées: '), write(T), 
+								write('on a les possibilités: '), nl, affichePossibi(0,Q), NNbP is NbP-1, NNp is Np +1, affichePossibi(NNbP, NNp, PML).
+
+
+
+verifChoix(PML,NbP,NP,NC,NP,NC):- NP>0, NP=<NbP, NC>0, elem_n(PML,NP,[T,Q]), compte(Q,0,VNC), NC=<VNC,!.
+verifChoix(PML,NbP,_,_,_,_):- write('vous avez choisit un choix inexistant, veuillez recommencer '), nl, 
+								write('numero pion: '), read(NP), nl, 
+								write('numero choix deplacement: '), read(NC),
+								verifChoix(PML,NbP,NP,NC,NNP,NNC),!.
+
+
+modeH_choix(P,B,PossibleMoveListe,[NNP,NNC]):- 	write('voici le damier a ce stade:'), nl, affiche_console(_),
+											allPeices(P,B,LP), compte(LP,0,NbP), nomJoueur(P),
+											write(' voici la liste des coups possibles par piece: '), nl,
+											affichageParPion(NbP,0,PossibleMoveList), nl, nl, 
+											write('Quel est votre choix ?'), nl, write('numero pion: '), read(NP), nl, write('numero choix deplacement: '), read(NC),
+											verifChoix(PML,NbP,NP,NC,NNP,NNC),!.
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TRUCS ESSAIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -603,7 +550,20 @@ appelP(_):- damier(X), possibleMoves(X,'R',L).
 
 
 
+/*
+% arg1: element a retirer (donnée), arg2: liste dans laquelle retirer tous les X (donnée), arg3: liste purifiée (retour)
 
+throwElements(_,[],[]).
+throwElements(X,[X|Q],Res):- throwElements(X,Q,Res),!.
+throwElements(X,[T|Q],[T|Res]):- throwElements(X,Q,Res).
+
+
+% retire les doublons de la liste des cases d arrivé possibles
+
+throwSameSquares([],[]).
+throwSameSquares([T|Q],[T|R]):- throwElements(T,Q,Res), throwSameSquares(Res,R).
+
+*/
 
 
 
@@ -670,9 +630,103 @@ deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), r
 
 
 
+/*
+
+% IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
+
+<<<<<<< HEAD
+
+
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,'pO']),!.
+friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,'kO']),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
+														% si la kalista du joueur qui va jouer son tour est encore la, sinon, il perd, l autre gagne... EZ
+
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'pR']),!.
+friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'kR']),!.	% idem
+
+=======
+% Sortie de plateau
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!. % INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0.
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
+%
+depl_haut(D,X,Y,[],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. % INITIALISATION
+depl_haut(D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, concat([[Xres,Y]],List_Temp,List_Move).
+depl_haut(D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1 , sim_depl(D,NX,Y,List_Temp,List_Move,Res).
+=======
+
+>>>>>>> f5d7fca4aaa62495c59646c22f7578401e2cdbd7
 
 
 
+test(_):- damier(X), write('ok'). % friendlyFire('O',X, 1,1).
+
+% Sortie de plateau
+depl_haut(P,D,X,Y,[],List_Move,1):- Xres is X-1, Xres=<0,!. 					% INITIALISATION
+depl_haut(P,D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres=<0,!.
+depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep):- NX is X-1, NX=<0.
+%
+
+
+depl_haut(P,D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X-1, Xres>0,!. 			% INITIALISATION
+depl_haut(P,D,X,Y,List_Temp,List_Move,1):- Xres is X-1, Xres>0, friendlyFire(P,D,Xres,Y), concat([[Xres,Y]],List_Temp,List_Move),!.
+depl_haut(P,D,X,Y,List_Temp,List_Move,1),!. 	% si la case d arrivee est une case alliée, on kill pas l allié.
+
+depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X-1, NX>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,NX,Y,List_Temp,List_Move,Res),!.		% si pas d obstacle
+depl_haut(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+
+
+
+% Sortie de plateau
+depl_bas(P,D,X,Y,[],List_Move,1):-Xres is X+1, Xres>6,!.						% INITIALISATION 
+depl_bas(P,D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>6,!.
+depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>6.
+%
+depl_bas(P,D,X,Y,[[Xres,Y]],[[Xres,Y]],1):-Xres is X+1,Xres>0,! . 			% INITIALISATION
+depl_bas(D,X,Y,List_Temp,List_Move,1):- Xres is X+1,Xres>0, friendlyFire(P,D,Xres,Y), concat([[Xres,Y]],List_Temp,List_Move),!.
+depl_bas(D,X,Y,List_Temp,List_Move,1),!.
+
+depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NX is X+1,NX>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,NX,Y,List_Temp,List_Move,Res),!.		% si pas d obstacle
+depl_bas(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+
+
+
+depl_droite(P,D,X,Y,[],List_Move,1):-Yres is Y+1,Yres>6,! . 					% INITIALISATION
+depl_droite(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>6,!.
+depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>6.
+
+
+depl_droite(P,D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y+1,Yres>0,!. 			% INITIALISATION
+depl_droite(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y+1 ,Yres>0, friendlyFire(P,D,X,Yres), concat([[X,Yres]],List_Temp,List_Move),!.
+depl_droite(P,D,X,Y,List_Temp,List_Move,1),!.
+
+depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y+1,NY>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,X,NY,List_Temp,List_Move,Res),!.		% si pas d obstacle
+depl_droite(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+
+
+depl_gauche(P,D,X,Y,[],List_Move,1):-Yres is Y-1,Yres=<0,!.					% INITIALISATION
+depl_gauche(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres=<0,!.
+depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY=<0.
+
+depl_gauche(P,D,X,Y,[[X,Yres]],[[X,Yres]],1):-Yres is Y-1,Yres>0,!.			% INITIALISATION 
+depl_gauche(P,D,X,Y,List_Temp,List_Move,1):-Yres is Y-1 ,Yres>0, friendlyFire(P,D,X,Yres), concat([[X,Yres]],List_Temp,List_Move),!.
+depl_gauche(P,D,X,Y,List_Temp,List_Move,1),!.
+
+
+
+depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep):-NY is Y-1,NY>0, Res is Res_Dep-1, checkObstacle(D,X,Y), sim_depl(P,D,X,NY,List_Temp,List_Move,Res),!.		% si pas d obstacle
+depl_gauche(P,D,X,Y,List_Temp,List_Move,Res_Dep).		% sinon
+
+
+
+
+sim_depl(P,D,X1,Y1,List_Temp,List_Final,Res_Dep):- depl_haut(P,D,X1,Y1,List_Temp,List_Move,Res_Dep), depl_gauche(P,D,X1,Y1,List_Move,List_Result,Res_Dep),
+	depl_bas(P,D,X1,Y1,List_Result,List_Result2,Res_Dep), depl_droite(P,D,X1,Y1,List_Result2,List_Final,Res_Dep),!.
+
+
+*/
 
 
 
