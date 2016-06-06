@@ -592,10 +592,16 @@ modeH_choix(P,B,PossibleMoveListe,Depart,Arrive):- 	write('voici le damier a ce 
 											write('Quel est votre choix ?'), nl, write('numero pion: '), read(NP), nl, write('numero choix deplacement: '), read(NC),
 											verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive),!.
 
+action(D,P,2,Size):- Size<6,write('pose ton pion'),!. %%%%%%%%%%%%%%%%% A FAIRE PREDICAT DE POSE PARTOUT %%%%%%%%%%%%%%%%%%%%%%%%%
+action(D,P,1,Size):- write('Joue'), retract(khan(K)), asserta(khan(0)),tourH(P),!. %%%%%%%%%%%%%%%%%%%%%%%% OK ça MARCHE MAIS SI TOUS CES PIONS SONT COINçé il reste bloqué si il decide de faire 1
+action(D,P,_,_):- write('Erreur lors de la saisie'),nl,choixAction(D,P).
 
 
+choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), Size>6, write('Vous etes bloque, que voulez vous faire?'),nl,
+write('1: Jouer n importe quelle piece?'),nl,read(C), action(D,P,C,Size).
 
-choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), write(Size), write(' vous etes bloque, que voulez vous faire').
+choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), Size<6, write('Vous etes bloque, que voulez vous faire?'),nl,
+write('1: Jouer n importe quelle piece?'), nl, write('2 : Ajouter un pion? '),nl,read(C), action(D,P,C,Size).
 
 
 
