@@ -121,13 +121,16 @@ no_liste(N,[T|Q]):-no_liste(N,Q).
 
 % predicat pour recup les info d une case
 
-recup_ligne([T|_],1,T).
+recup_ligne([T|_],1,T):-!.
 recup_ligne([T|Q],Num_ligne,Ligne):- Res is Num_ligne-1, recup_ligne(Q,Res,Ligne). 
 
-recup_case([T|_],1,T).
+
+recup_case([T|_],1,T):-!.
 recup_case([T|Q],Num_Case,Case):- Res is Num_Case-1, recup_case(Q,Res,Case).
 recup_case(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), recup_case(Ligne,Num_Case,Case). 
-recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari,Pion]) .
+
+
+recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari,Pion]) . %Fonction de lancement
 
 
 
@@ -475,6 +478,8 @@ depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(
 depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res).
 
 sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final),!.
+
+
 % sim_depl(P,D,X1,Y1,[],Res_Dep):- \+ setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final),!.
 
 
@@ -513,7 +518,7 @@ allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,
 % on met les coordonées du pion en question au debut de sa liste de moves possibles et donne l arite, 
 % cela permettera lors de laffichage de comprendre a quel pion on a affaire
 
-movePiece(P,D,[N,X,Y],[]):- sim_depl(P,D,X,Y,[],N),!.
+movePiece(P,D,[N,X,Y],[]):- \+sim_depl(P,D,X,Y,List_Temp,N),!.
 movePiece(P,D,[N,X,Y],[[X,Y]|[List_Final]]):- sim_depl(P,D,X,Y,List_Temp,N), retire_list([X,Y],P,D,List_Temp,List_Final),!.
 
 
@@ -527,8 +532,11 @@ possibleMoves(Board,Player,PossibleMoveList):- allPeices(Player,Board,1,1,LP), g
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%damier(D),giveMovesAllPieces('R',D,[2,1,1],A).
+%damier(D),giveMovesAllPieces('R',D,[[1,2,6]],A).
 
-
+% damier(D),movePiece('R',D,[2,1,1],R).
+% damier(D),sim_depl('R',D,1,1,List_Temp,2),retire_list([1,1],'R',D,List_Temp,[]).
 nomJoueur('O'):- write('Joueur Ocre'), nl.
 nomJoueur('R'):- write('Joueur Rouge'), nl.
 
@@ -592,10 +600,10 @@ choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), write(Size), write(
 
 
 
-
+tourH(P):- damier(D), possibleMoves(D,P,[]), choixAction(D,P),!. % Il peut y avoir que une simple liste je sais pas pourquoi, mieux vaut surcharger c'est plus simple.
 
 tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
-% tourH(P):- damier(D), possibleMoves(D,P,Res), write(Res),!.
+
 tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
 efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
 
