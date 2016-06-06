@@ -1,5 +1,7 @@
 :-dynamic(damier/1).
+:-dynamic(khan/1).
 
+khan(0).
 
 %%%%%%%%%%%%%%%% NORD
 damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
@@ -405,7 +407,7 @@ afficher_list([T|Q],N):- write(N),write(' : '),write(T),nl,Nres is N+1, afficher
 
 
 afficher_list_list([],N):-!.
-afficher_list_list([[Coord,Move]|Q],N):- write('Pion '),write(N),write(' '),write(Coord),nl,afficher_list(Move,1),Nres is N+1, afficher_list_list(Q,Nres).
+afficher_list_list([[Coord,Move]|Q],N):- write('Pion '),write(N),write(' '),write(Coord), nl, afficher_list(Move,1), Nres is N+1, afficher_list_list(Q,Nres).
 
 retire_list(Coord,Couleur,D,[],[]):- !.
 
@@ -416,9 +418,10 @@ retire_list(Coord,Couleur,D,[[X1,Y1]|Q],P):- friendlyFire(Couleur,D,X1,Y1), reti
 retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):-  M = [X1,Y1],\+friendlyFire(Couleur,D,X1,Y1),retire_list(Coord,Couleur,D,Q,P).
 
 % Modifie le damier en 2 etapes insertion nouvelle position effacement ancienne
- % je recup le choix de la poss, 
-modif_damier(X1,Y1,[NX,NY],P,D,ND):-find_line(P,NX,NY,D,ND,C),!. % je recup le choix de la poss, 
-modif_damier(X1,Y1,[NX,NY],P,D,ND):-find_line(P,NX,NY,D,ND,C),!. 
+ % je recup le choix de la poss
+
+modif_damier(X1,Y1,[NX,NY],P,D,ND):- find_case(D,NX,NY,[N|_]), khan(K), retract(khan(K)), asserta(khan(N)), find_line(P,NX,NY,D,ND,C),!. % je recup le choix de la poss, 
+modif_damier(X1,Y1,[NX,NY],P,D,ND):-find_line(P,NX,NY,D,ND,C),!. % memes conditions d entrées donc jamais executé, toujours le premier qui cut ?
 
 
 
@@ -477,7 +480,8 @@ checkCase('O',[N,'kO'],N).
 % arg5: liste des pieces de cette ligne, chaque pieces etant representé par une liste [L,C]  (retour) 
 
 piecesInLine(_,[],_,_,[]):-!.
-piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- khan(0), checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- khan(Ar), checkCase(P,T,N), Ar=N, V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
 piecesInLine(P,[T|Q],U,V,RC):- V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
 
 
@@ -494,7 +498,7 @@ allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,
 % on met les coordonées du pion en question au debut de sa liste de moves possibles et donne l arite, 
 % cela permettera lors de laffichage de comprendre a quel pion on a affaire
 
-movePiece(P,D,[N,X,Y],[[X,Y]|[List_Final]]):- sim_depl(P,D,X,Y,List_Temp,N),retire_list([X,Y],P,D,List_Temp,List_Final),!.
+movePiece(P,D,[N,X,Y],[[X,Y]|[List_Final]]):- sim_depl(P,D,X,Y,List_Temp,N), retire_list([X,Y],P,D,List_Temp,List_Final),!.
 
 
 
@@ -534,7 +538,7 @@ affichageParPion(NbP,Np,PML):- elem_n(PML,NbP,[T,Q]), write('Pour la piece num:'
 
 
 
-verifChoix([],1,Ligne,X,Arrivee):-!. %erreru collone
+verifChoix([],1,Ligne,X,Arrivee):-!. %erreur collone
 
 
 verifChoix([A|_],0,1,X,A):-!.
@@ -544,12 +548,14 @@ verifChoix([[X,[T|_]]|_],1,1,X,T):-!. %marche
 verifChoix([[X,Y]|_],1,Ligne,X,Arrivee):- verifChoix(Y,0,Ligne,X,Arrivee),!.
 
 verifChoix([_|Q],Colonne,Ligne,Depart,Arrivee):- Cres is Colonne-1, verifChoix(Q,Cres,Ligne,Depart,Arrivee),!.
+
 /*
 verifChoix(PML,NbP,NP,NC,NP,NC):- NP>0, NP=<NbP, NC>0, elem_n(PML,NP,[T,Q]), compte(Q,0,VNC), NC=<VNC,!.
 verifChoix(PML,NbP,_,_,_,_):- write('vous avez choisit un choix inexistant, veuillez recommencer '), nl, 
 								write('numero pion: '), read(NP), nl, 
 								write('numero choix deplacement: '), read(NC),
-								verifChoix(PML,NbP,NP,NC,NNP,NNC),!. */
+								verifChoix(PML,NbP,NP,NC,NNP,NNC),!. 
+*/
 
 verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive):- verifChoix(PossibleMoveListe,NP,NC,Depart,Arrive),!. % predicat pour gerer les erreur
 verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive):- \+verifChoix(PossibleMoveListe,NP,NC,Depart,Arrive), tourH(P),!. % predicat pour gerer les erreur
@@ -558,17 +564,20 @@ verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive):- \+verifChoix(PossibleMove
 modeH_choix(P,B,PossibleMoveListe,Depart,Arrive):- 	write('voici le damier a ce stade:'), nl, affiche_console(_),
 											/*allPeices(P,B,1,1,LP)*/ nomJoueur(P),
 											write(' voici la liste des coups possibles par piece: '), nl,
-											afficher_list_list(PossibleMoveListe,1), nl, nl, 
+											afficher_list_list(PossibleMoveListe,1), nl, nl,
 											write('Quel est votre choix ?'), nl, write('numero pion: '), read(NP), nl, write('numero choix deplacement: '), read(NC),
 											verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive),!.
 
+
 tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
-efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)),!.
+efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
+
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TRUCS ESSAIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
 
 /*
 
