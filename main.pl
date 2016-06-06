@@ -4,8 +4,8 @@
 khan(0).
 
 %%%%%%%%%%%%%%%% NORD
-damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
-			[[2,[]],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
+damier([	[[2,'pR'],[3,'pO'],[1,[]],[2,[]],[2,[]],[3,[]]],
+			[[2,'pO'],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
 			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
 			[[2,[]],[3,[]],[1,[]],[3,[]],[1,[]],[3,[]]],
@@ -413,15 +413,30 @@ retire_list(Coord,Couleur,D,[],[]):- !.
 
 retire_list(Coord,Couleur,D,[Coord|Q],P):- retire_list(Coord,Couleur,D,Q,P),!.
 
-%retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):- \+ friendlyFire(Couleur,D,X1,Y1),retire_list(Coord,Couleur,D,Q,P).
+%retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):- \+ friendlyFire(Couleur,D,X1,Y1), retire_list(Coord,Couleur,D,Q,P).
 retire_list(Coord,Couleur,D,[[X1,Y1]|Q],P):- friendlyFire(Couleur,D,X1,Y1), retire_list(Coord,Couleur,D,Q,P),!.
 retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):-  M = [X1,Y1],\+friendlyFire(Couleur,D,X1,Y1),retire_list(Coord,Couleur,D,Q,P).
+
+
+
+
+ecrireP(Pion,[T,_],[T,Pion]):-!.
+
+% arg1: colonne d entrée (donnée), arg2: ligne a modif (donnée), arg3: liste modifiée (retour)
+
+ecrire_line(J,V,L,LR):-elem_n(L,V,E), ecrireP(J,E,RE), recreate_list(RE,L,V,LR),!.
+
+ecrire_dam(J,U,V,D,RD):- elem_n(D,U,L), ecrire_line(J,V,L,RL),  recreate_list(RL,D,U,RD),!.
+
+
+move(P,X1,Y1,NX,NY,D,ND):- find_case(D,X1,Y1,[_,Pion]), ecrire_dam(Pion,NX,NY,D,ND).
+
+
 
 % Modifie le damier en 2 etapes insertion nouvelle position effacement ancienne
  % je recup le choix de la poss
 
-modif_damier(X1,Y1,[NX,NY],P,D,ND):- find_case(D,NX,NY,[N|_]), khan(K), retract(khan(K)), asserta(khan(N)), find_line(P,NX,NY,D,ND,C),!. % je recup le choix de la poss, 
-modif_damier(X1,Y1,[NX,NY],P,D,ND):-find_line(P,NX,NY,D,ND,C),!. % memes conditions d entrées donc jamais executé, toujours le premier qui cut ?
+modif_damier(X1,Y1,[NX,NY],P,D,ND):- find_case(D,NX,NY,[N|_]), khan(K), retract(khan(K)), asserta(khan(N)), move(P,X1,Y1,NX,NY,D,ND),!. % je recup le choix de la poss, 
 
 
 
@@ -459,13 +474,13 @@ depl(P,D,X,Y,List_Move,Res_Dep):- NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(
 depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res). %% BUG ON peut revenir en arriere
 depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res).
 
-sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final).
+sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final),!.
+% sim_depl(P,D,X1,Y1,[],Res_Dep):- \+ setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final),!.
 
 
 
 
 
-%Khan(,ArImpose)
 
 
 % arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: cardinalité de la case (retour),
@@ -498,16 +513,17 @@ allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,
 % on met les coordonées du pion en question au debut de sa liste de moves possibles et donne l arite, 
 % cela permettera lors de laffichage de comprendre a quel pion on a affaire
 
+movePiece(P,D,[N,X,Y],[]):- sim_depl(P,D,X,Y,[],N),!.
 movePiece(P,D,[N,X,Y],[[X,Y]|[List_Final]]):- sim_depl(P,D,X,Y,List_Temp,N), retire_list([X,Y],P,D,List_Temp,List_Final),!.
-
 
 
 % arg1: Palyer (donnée), arg2: damier (donnée), arg3: liste de coordonnée de pieces (donnée), arg4: liste de touts les moves possibles, chaque move etant une liste (retour),
 
 giveMovesAllPieces(_,_,[],[]):-!.
+giveMovesAllPieces(P,B,[T|Q],R):- movePiece(P,B,T,[]), giveMovesAllPieces(P,B,Q,R),!.
 giveMovesAllPieces(P,B,[T|Q],[Res|R]):- movePiece(P,B,T,Res), giveMovesAllPieces(P,B,Q,R).
 
-possibleMoves(Board,Player,PossibleMoveList):- allPeices(Palyer,Board,1,1,LP), giveMovesAllPieces(Palyer,Board,LP,PossibleMoveList),!.  
+possibleMoves(Board,Player,PossibleMoveList):- allPeices(Player,Board,1,1,LP), giveMovesAllPieces(Palyer,Board,LP,PossibleMoveList),!.  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -569,6 +585,17 @@ modeH_choix(P,B,PossibleMoveListe,Depart,Arrive):- 	write('voici le damier a ce 
 											verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive),!.
 
 
+
+
+choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), write(Size), write(' vous etes bloque, que voulez vous faire').
+
+
+
+
+
+
+tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
+% tourH(P):- damier(D), possibleMoves(D,P,Res), write(Res),!.
 tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
 efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
 
