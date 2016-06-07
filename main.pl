@@ -4,8 +4,8 @@
 khan(0).
 
 %%%%%%%%%%%%%%%% NORD
-damier([	[[2,'pR'],[3,'pO'],[1,[]],[2,[]],[2,[]],[3,[]]],
-			[[2,'pO'],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
+damier([	[[2,[]],[3,'pR'],[1,[]],[2,[]],[2,[]],[3,[]]],
+			[[2,[]],[1,'pO'],[3,'pO'],[1,[]],[3,[]],[1,[]]],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
 			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
 			[[2,[]],[3,[]],[1,[]],[3,[]],[1,[]],[3,[]]],
@@ -55,7 +55,7 @@ joueurO('O').
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% AFFICHAGE DU DAMIER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-affiche_console(_):- damier(X),affichage_dam(X).
+affiche_console(_):- damier(X),khan(K), write('Position du Khan: '),write(K),nl,affichage_dam(X).
 
 affiche_case(Y):- write(Y), write('|').
 
@@ -131,6 +131,39 @@ recup_case(D,Num_Ligne,Ligne,Num_Case,Case):- recup_ligne(D,Num_Ligne,Ligne), re
 
 
 recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari,Pion]) . %Fonction de lancement
+
+retire_last_elem([T|[]],[]):-!.
+retire_last_elem([T|Q],[T|Qres]):-retire_last_elem(Q,Qres).
+
+%l'inverse trouve une case avec les info données, avec backtracking
+
+/*
+trouve_ligne([[Ari,Pion]|_],_,1,Ari,Pion).
+trouve_ligne([T|Q],_,Y,Ari,Pion):- trouve_ligne(Q,X,Yres,Ari,Pion), Y is Yres +1.
+
+
+%trouve_case([T|[]],X,Y,Ari,Pion):-trouve_ligne(T,0,Y,Ari,Pion),X is 1.
+%trouve_case([T|[]],X,Y,Ari,Pion):-trouve_ligne(T,0,6,Ari,Pion),X is 1,!.
+
+trouve_case(T,Xres,Y,Ari,Pion,2):-trouve_ligne(T,Xres,Y,Ari,Pion).
+trouve_case([T|[]],X,Y,Ari,Pion):-trouve_case(T,Xres,Y,Ari,Pion,2),X is Xres+1,!.
+trouve_case([T|_],X,Y,Ari,Pion):-trouve_ligne(T,Xres,Y,Ari,Pion),trouve_case(Q,Xres,Y,Ari,Pion),X is Xres+1.
+trouve_case([T|Q],X,Y,Ari,Pion):- trouve_case(Q,Xres,Y,Ari,Pion), X is Xres+1.
+
+%damier(D),trouve_case(D,X,Y,_,_).
+
+*/
+
+
+
+
+trouve_ligne([[Ari,Pion]|_],_,1,Ari,Pion).
+trouve_ligne([T|Q],_,Y,Ari,Pion):- trouve_ligne(Q,X,Yres,Ari,Pion), Y is Yres +1.
+trouve_case([],0,Y,Ari,Pion):-trouve_ligne(Q,X,Y,Ari,Pion),!.
+trouve_case([T|_],X,Y,Ari,Pion):-trouve_ligne(T,Xres,Y,Ari,Pion),trouve_case(Q,Xres,Y,Ari,Pion),X is Xres+1.
+trouve_case([T|Q],X,Y,Ari,Pion):- trouve_case(Q,Xres,Y,Ari,Pion), X is Xres+1.
+
+
 
 
 
@@ -262,7 +295,7 @@ positionnerK(J):- damier(X),  write('entrez les coordonees de la case de la kali
 
 
 ajout_pion(_,0).			% pas besoin de cut, on est a 0, il pourra pas tenter autre chose (a moins qu il ne remonte avant ?)
-ajout_pion(I):- NI is I-1, positionner(J), ajout_pion(J,NI).
+ajout_pion(J,I):- NI is I-1, positionner(J), ajout_pion(J,NI).
 
 
 
@@ -283,10 +316,10 @@ init_disposition(J):- ajout_pion(J,5), positionnerK(J),!.
 
 cote_init(_):- write('donnez votre cotez de depart: Nord N, Est E, Sud S Ouest O'),nl,read(X), choix_cote(X).
 
-choix_cote(X):- X='n',!.
-choix_cote(X):- X='e',damier(Y), damierE(Z), retract(damier(Y)), asserta(damier(Z)),!.
-choix_cote(X):- X='s',damier(Y), damierS(Z), retract(damier(Y)), asserta(damier(Z)),!.
-choix_cote(X):- X='o',damier(Y), damierO(Z), retract(damier(Y)), asserta(damier(Z)),!.
+choix_cote(X):- X='N',!.
+choix_cote(X):- X='E',damier(Y), damierE(Z), retract(damier(Y)), asserta(damier(Z)),!.
+choix_cote(X):- X='S',damier(Y), damierS(Z), retract(damier(Y)), asserta(damier(Z)),!.
+choix_cote(X):- X='O',damier(Y), damierO(Z), retract(damier(Y)), asserta(damier(Z)),!.
 choix_cote(X):-cote_init(_).
 
 % renverser renverse le tab dans le sens des aiguilles d une montre x fois
@@ -304,8 +337,8 @@ choix_cote(X):-cote_init(_).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INITIALISATION DU DAMIER POUR LES 2 JOUEURS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-initBoard(Joueur):- Joueur='R', cote_init(_), init_disposition(Joueur),!.
-initBoard(Joueur):- Joueur='O',  init_disposition(Joueur).
+initBoard(Joueur):- Joueur='R', write('Init joueur R'),nl,cote_init(_), init_disposition(Joueur),!.
+initBoard(Joueur):- Joueur='O', write('Init joueur O'),nl, init_disposition(Joueur).
 
 
 
@@ -396,12 +429,12 @@ bonne_couleur('kR','R').
 bonne_couleur('pR','R').
 
 */
-
+friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'kO'),!.
+friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'pO'),!.
 friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'pR'),!.
 friendlyFire('R',D,X,Y):- recup_case(X,Y,A,'kR'),!. 	
 
-friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'kO'),!.
-friendlyFire('O',D,X,Y):- recup_case(X,Y,A,'pO'),!.
+
 
 
 afficher_list([],N):-!.
@@ -418,7 +451,7 @@ retire_list(Coord,Couleur,D,[Coord|Q],P):- retire_list(Coord,Couleur,D,Q,P),!.
 
 %retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):- \+ friendlyFire(Couleur,D,X1,Y1), retire_list(Coord,Couleur,D,Q,P).
 retire_list(Coord,Couleur,D,[[X1,Y1]|Q],P):- friendlyFire(Couleur,D,X1,Y1), retire_list(Coord,Couleur,D,Q,P),!.
-retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):-  M = [X1,Y1],\+friendlyFire(Couleur,D,X1,Y1),retire_list(Coord,Couleur,D,Q,P).
+retire_list(Coord,Couleur,D,[[X1,Y1]|Q],[M|P]):-  M = [X1,Y1],/*\+friendlyFire(Couleur,D,X1,Y1),*/retire_list(Coord,Couleur,D,Q,P).
 
 
 
@@ -528,7 +561,7 @@ giveMovesAllPieces(_,_,[],[]):-!.
 giveMovesAllPieces(P,B,[T|Q],R):- movePiece(P,B,T,[]), giveMovesAllPieces(P,B,Q,R),!.
 giveMovesAllPieces(P,B,[T|Q],[Res|R]):- movePiece(P,B,T,Res), giveMovesAllPieces(P,B,Q,R).
 
-possibleMoves(Board,Player,PossibleMoveList):- allPeices(Player,Board,1,1,LP), giveMovesAllPieces(Palyer,Board,LP,PossibleMoveList),!.  
+possibleMoves(Board,Player,PossibleMoveList):- allPeices(Player,Board,1,1,LP), giveMovesAllPieces(Player,Board,LP,PossibleMoveList),!.  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -592,7 +625,31 @@ modeH_choix(P,B,PossibleMoveListe,Depart,Arrive):- 	write('voici le damier a ce 
 											write('Quel est votre choix ?'), nl, write('numero pion: '), read(NP), nl, write('numero choix deplacement: '), read(NC),
 											verif_Choix(P,PossibleMoveListe,NP,NC,Depart,Arrive),!.
 
-action(D,P,2,Size):- Size<6,write('pose ton pion'),!. %%%%%%%%%%%%%%%%% A FAIRE PREDICAT DE POSE PARTOUT %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+%%%%%%% ICI gestion de la pos dans le damier sur une case d'arité du Khan
+
+
+trouve_poss_dans_liste_khan(_,[],D,P):- write('Choix erronnee'),nl,choose_place(D,P,LP),!.
+
+trouve_poss_dans_liste_khan(1,[[X,Y]|_],D,'O'):-ecrire_dam('pO',X,Y,D,ND),retract(damier(D)), asserta(damier(ND)),!. %% repartir dans le tour
+
+trouve_poss_dans_liste_khan(1,[[X,Y]|_],D,'R'):-ecrire_dam('pR',X,Y,D,ND),retract(damier(D)), asserta(damier(ND)),!. %% repartir dans le tour
+trouve_poss_dans_liste_khan(C,[T|Q],D,P):- Cres is C-1, trouve_poss_dans_liste_khan(Cres,Q,D,P).
+
+affiche_ligne_mod([],_,_,_):-!.
+affiche_ligne_mod([T|Q],N,D,P):-write(N),write(' : '),write(T),nl,Nres is N+1,affiche_ligne_mod(Q,Nres,D,P). % N c'est juste un compteur d'affichage
+trouve_toute_case(D,P,Liste_Poss,K):-bagof([X,Y],trouve_case(D,X,Y,K,[]),Temp), retire_last_elem(Temp,Liste_Poss),affiche_console(_),write('Choisis:'),nl, affiche_ligne_mod(Liste_Poss,1,D,P),read(C), trouve_poss_dans_liste_khan(C,Liste_Poss,D,P),!.
+choose_place(D,P,Liste_Poss):-khan(0),write('Non possitionner, un joueur lambda ne peut voir ça'),nl,trouve_toute_case(D,P,Liste_Poss,2),!. % servira pas In game, juste pour les test
+choose_place(D,P,Liste_Poss):-khan(K),write(K),nl,trouve_toute_case(D,P,Liste_Poss,K).                 % setof de recup case arité khan, et []
+
+
+action(D,P,2,Size):- Size<6,write('Pose ton pion sur la case d arité du khan:'),choose_place(D,P,Result),!. %%%%%%%%%%%%%%%%% A FAIRE PREDICAT DE POSE PARTOUT %%%%%%%%%%%%%%%%%%%%%%%%%
 action(D,P,1,Size):- write('Joue'), retract(khan(K)), asserta(khan(0)),tourH(P),!. %%%%%%%%%%%%%%%%%%%%%%%% OK ça MARCHE MAIS SI TOUS CES PIONS SONT COINçé il reste bloqué si il decide de faire 1
 action(D,P,_,_):- write('Erreur lors de la saisie'),nl,choixAction(D,P).
 
@@ -613,11 +670,34 @@ tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
 tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
 efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
 
+khalistha('R',Liste_Poss,D):-bagof([X,Y,A],trouve_case(D,X,Y,A,'kR'),Temp), retire_last_elem(Temp,Liste_Poss).
+khalistha('O',Liste_Poss,D):-bagof([X,Y,A],trouve_case(D,X,Y,A,'kO'),Temp), retire_last_elem(Temp,Liste_Poss).
+big_tourH_vs_H('O'):- damier(D),khalistha('O',[],D),write('Joueur R gagne'),nl,!.
+big_tourH_vs_H('R'):- damier(D),khalistha('R',[],D),write('Joueur O gagne'),nl,!.
+big_tourH_vs_H('O'):- damier(D),tourH('O'), big_tourH_vs_H('R').
+big_tourH_vs_H('R'):- damier(D),tourH('R'), big_tourH_vs_H('O').
+
+jeuH_vs_H(P):- initBoard('R'),initBoard('O'),big_tourH_vs_H('R').
+
+%damier(D),bagof([X,Y],trouve_case(D,X,Y,_,'kR'),Res).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LANCEMENT DU JEU ET MENU
+
+menu:- write('1. Player VS Player'),nl,
+write('2. Player VS IA'),nl,
+write('3. IA VS IA'),nl,
+write('Entrez un choix'), nl, read(C), appel(C),!.
+
+appel(1):-jeuH_vs_H(P),!.
+appel(2):-!.
+appel(3):-!.
+appel(_):- write('Erreur entrée incorrect'),nl,boucle_menu.
 
 
 
+boucle_menu:- repeat, menu,!.
 
-
+jeu_khan:- boucle_menu.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TRUCS ESSAIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*
