@@ -8,7 +8,7 @@ damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
 			[[2,[]],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
 			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
-			[[2,[]],[3,[]],[1,[]],[3,[]],[1,[]],[3,[]]],
+			[[2,[]],[3,[]],[1,[]],[3,[]],[1,'pO'],[3,'pR']],
 			[[2,[]],[1,[]],[3,[]],[2,[]],[2,[]],[1,[]]]
 		]).
 		
@@ -498,18 +498,18 @@ friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,'kR']),!.	% idem
 
 % tout simplement : ici on verifie que la case sur laquelle on arrive n est pas une case avec un pion allié dessus, sinon faux
 
-depl(P,D,X,Y,[X,Y],0):-!.
-depl(P,D,X,Y,List_Move,1):- NX is X-1, NX>0, depl(P,D,NX,Y,List_Move,0).
-depl(P,D,X,Y,List_Move,1):- NX is X+1, NX<7, depl(P,D,NX,Y,List_Move,0).
-depl(P,D,X,Y,List_Move,1):- NY is Y-1, NY>0, depl(P,D,X,NY,List_Move,0).
-depl(P,D,X,Y,List_Move,1):- NY is Y+1, NY<7, depl(P,D,X,NY,List_Move,0).
+depl(P,D,X,Y,[X,Y],0,_):-!.
+depl(P,D,X,Y,List_Move,1,Dir):- NX is X-1, NX>0,Dir\='B',depl(P,D,NX,Y,List_Move,0,'H').
+depl(P,D,X,Y,List_Move,1,Dir):- NX is X+1, NX<7,Dir\='H',depl(P,D,NX,Y,List_Move,0,'B').
+depl(P,D,X,Y,List_Move,1,Dir):- NY is Y-1, NY>0,Dir\='D',depl(P,D,X,NY,List_Move,0,'G').
+depl(P,D,X,Y,List_Move,1,Dir):- NY is Y+1, NY<7,Dir\='G',depl(P,D,X,NY,List_Move,0,'D').
 
-depl(P,D,X,Y,List_Move,Res_Dep):- NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(P,D,NX,Y,List_Move,Res).
-depl(P,D,X,Y,List_Move,Res_Dep):- NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]), depl(P,D,NX,Y,List_Move,Res).
-depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res). %% BUG ON peut revenir en arriere
-depl(P,D,X,Y,List_Move,Res_Dep):- NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]), depl(P,D,X,NY,List_Move,Res).
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]),Dir\='B', depl(P,D,NX,Y,List_Move,Res,'H').
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]),Dir\='H', depl(P,D,NX,Y,List_Move,Res,'B').
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]),Dir\='D', depl(P,D,X,NY,List_Move,Res,'G'). %% BUG ON peut revenir en arriere
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]),Dir\='G', depl(P,D,X,NY,List_Move,Res,'D').
 
-sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final),!.
+sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_Dep,'N'),List_Final),!.
 
 
 % sim_depl(P,D,X1,Y1,[],Res_Dep):- \+ setof(Result,depl(P,D,X1,Y1,Result,Res_Dep),List_Final),!.
@@ -783,7 +783,7 @@ tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],A
 */
 
 
->>>>>>> 4b5f39454056904f2a64fc903d7e20bad44c7976
+
 
 
 
