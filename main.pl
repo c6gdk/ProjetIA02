@@ -135,7 +135,7 @@ recup_case(X,Y,Ari,Pion):- damier(W),recup_case(W,X,Ligne,Y,[Ari,Pion]) . %Fonct
 retire_last_elem([T|[]],[]):-!.
 retire_last_elem([T|Q],[T|Qres]):-retire_last_elem(Q,Qres).
 
-%l'inverse trouve une case avec les info données, avec backtracking
+% l inverse trouve une case avec les info données, avec backtracking
 
 /*
 trouve_ligne([[Ari,Pion]|_],_,1,Ari,Pion).
@@ -289,7 +289,7 @@ positionnerK(J):- damier(X),  write('entrez les coordonees de la case de la kali
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SET DE L ENSEMBLE DES PION POUR UNE EQUIPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SET DE L ENSEMBLE DES PION POUR UNE EQUIPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -488,7 +488,6 @@ modif_damier(X1,Y1,[NX,NY],P,D,ND):- find_case(D,NX,NY,[N|_]), khan(K), retract(
 friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
 friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,['pO']]),!.
 friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,['kO']]),!.	% attention là il gagne quand meme mais bon... osef ? nan en vrai avant chaque tour il suffira de regarder 
-														% si la kalista du joueur qui va jouer son tour est encore la, sinon, il perd, l autre gagne... EZ
 
 
 friendlyFire('O',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
@@ -565,6 +564,7 @@ possibleMoves(Board,Player,PossibleMoveList):- allPeices(Player,Board,1,1,LP), g
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %damier(D),giveMovesAllPieces('R',D,[2,1,1],A).
 %damier(D),giveMovesAllPieces('R',D,[[1,2,6]],A).
 
@@ -632,7 +632,7 @@ modeH_choix(P,B,PossibleMoveListe,Depart,Arrive):- 	write('voici le damier a ce 
 
 
 
-%%%%%%% ICI gestion de la pos dans le damier sur une case d'arité du Khan
+%%%%%%%%%%%%%%%%%% ICI gestion de la pos dans le damier sur une case d arité du Khan
 
 
 trouve_poss_dans_liste_khan(_,[],D,P):- write('Choix erronnee'),nl,choose_place(D,P,LP),!.
@@ -644,13 +644,15 @@ trouve_poss_dans_liste_khan(C,[T|Q],D,P):- Cres is C-1, trouve_poss_dans_liste_k
 
 affiche_ligne_mod([],_,_,_):-!.
 affiche_ligne_mod([T|Q],N,D,P):-write(N),write(' : '),write(T),nl,Nres is N+1,affiche_ligne_mod(Q,Nres,D,P). % N c'est juste un compteur d'affichage
-trouve_toute_case(D,P,Liste_Poss,K):-bagof([X,Y],trouve_case(D,X,Y,K,[]),Temp), retire_last_elem(Temp,Liste_Poss),affiche_console(_),write('Choisis:'),nl, affiche_ligne_mod(Liste_Poss,1,D,P),read(C), trouve_poss_dans_liste_khan(C,Liste_Poss,D,P),!.
-choose_place(D,P,Liste_Poss):-khan(0),write('Non possitionner, un joueur lambda ne peut voir ça'),nl,trouve_toute_case(D,P,Liste_Poss,2),!. % servira pas In game, juste pour les test
+trouve_toute_case(D,P,Liste_Poss,K):-bagof([X,Y],trouve_case(D,X,Y,K,[]),Temp), retire_last_elem(Temp,Liste_Poss),affiche_console(_),
+	write('Choisis:'),nl, affiche_ligne_mod(Liste_Poss,1,D,P),read(C), trouve_poss_dans_liste_khan(C,Liste_Poss,D,P),!.
+
+choose_place(D,P,Liste_Poss):-khan(0),write('Non positionne, un joueur lambda ne peut voir ça'),nl,trouve_toute_case(D,P,Liste_Poss,2),!. % servira pas In game, juste pour les test
 choose_place(D,P,Liste_Poss):-khan(K),write(K),nl,trouve_toute_case(D,P,Liste_Poss,K).                 % setof de recup case arité khan, et []
 
 
-action(D,P,2,Size):- Size<6,write('Pose ton pion sur la case d arité du khan:'),choose_place(D,P,Result),!. %%%%%%%%%%%%%%%%% A FAIRE PREDICAT DE POSE PARTOUT %%%%%%%%%%%%%%%%%%%%%%%%%
-action(D,P,1,Size):- write('Joue'), retract(khan(K)), asserta(khan(0)),tourH(P),!. %%%%%%%%%%%%%%%%%%%%%%%% OK ça MARCHE MAIS SI TOUS CES PIONS SONT COINçé il reste bloqué si il decide de faire 1
+action(D,P,2,Size):- Size<6,write('Posez votre pion sur la case d arité du khan:'),choose_place(D,P,Result),!. %%%%%%%%%%%%%%%%% A FAIRE PREDICAT DE POSE PARTOUT %%%%%%%%%%%%%%%%%%%%%%%
+action(D,P,1,Size):- write('Joue'), retract(khan(K)), asserta(khan(0)),tourH(P),!. %%%%%%%%%%%%% OK ça MARCHE MAIS SI TOUS CES PIONS SONT COINçé il reste bloqué si il decide de faire 1
 action(D,P,_,_):- write('Erreur lors de la saisie'),nl,choixAction(D,P).
 
 
@@ -663,25 +665,25 @@ write('1: Jouer n importe quelle piece?'), nl, write('2 : Ajouter un pion? '),nl
 
 
 
-tourH(P):- damier(D), possibleMoves(D,P,[]), choixAction(D,P),!. % Il peut y avoir que une simple liste je sais pas pourquoi, mieux vaut surcharger c'est plus simple.
+tourH(P):- damier(D), possibleMoves(D,P,[]), choixAction(D,P),!. % Il peut y avoir que une simple liste je sais pas pourquoi, mieux vaut surcharger c est plus simple.
 
 tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
 
 tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
 efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
 
-khalistha('R',Liste_Poss,D):-bagof([X,Y,A],trouve_case(D,X,Y,A,'kR'),Temp), retire_last_elem(Temp,Liste_Poss).
-khalistha('O',Liste_Poss,D):-bagof([X,Y,A],trouve_case(D,X,Y,A,'kO'),Temp), retire_last_elem(Temp,Liste_Poss).
-big_tourH_vs_H('O'):- damier(D),khalistha('O',[],D),write('Joueur R gagne'),nl,!.
-big_tourH_vs_H('R'):- damier(D),khalistha('R',[],D),write('Joueur O gagne'),nl,!.
-big_tourH_vs_H('O'):- damier(D),tourH('O'), big_tourH_vs_H('R').
-big_tourH_vs_H('R'):- damier(D),tourH('R'), big_tourH_vs_H('O').
+kalista('R',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kR'),Temp), retire_last_elem(Temp,Liste_Poss).
+kalista('O',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kO'),Temp), retire_last_elem(Temp,Liste_Poss).
+big_tourH_vs_H('O'):- damier(D), kalista('O',[],D), write('le joueur Rouge gagne'),nl,!.
+big_tourH_vs_H('R'):- damier(D), kalista('R',[],D), write('le joueur Ocre gagne'),nl,!.
+big_tourH_vs_H('O'):- damier(D), tourH('O'), big_tourH_vs_H('R').
+big_tourH_vs_H('R'):- damier(D), tourH('R'), big_tourH_vs_H('O').
 
 jeuH_vs_H(P):- initBoard('R'),initBoard('O'),big_tourH_vs_H('R').
 
 %damier(D),bagof([X,Y],trouve_case(D,X,Y,_,'kR'),Res).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LANCEMENT DU JEU ET MENU
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LANCEMENT DU JEU ET MENU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 menu:- write('1. Player VS Player'),nl,
 write('2. Player VS IA'),nl,
@@ -702,7 +704,86 @@ jeu_khan:- boucle_menu.
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% IA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% THE AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% le but de l IA est qu elle choisisse le meilleur coup possible, parmis la liste retournee par possible moves
+
+
+
+
+%% idée de strat pour le choix d un dpl : pour chaque pion que l on peut deplacer pour un tour de l ia, on regarde tout les coups qui meneraient a bouffer la kalista adverse
+% dans "lhypothese" ou les pions ennemis ne bougent pas (pour pas trop se compliquer). On ne retient que le plus court chemin parmis tout ceux possibles (pour un meme pion de depart).
+% on stoke l ensemble des moves a faire qui meneraient a la mort de la kalista adverse.
+% on regarde ensuite quel serait le chemin le plus court parmis tout ceux retournés par les pions deplacables initialement. Si deux chemin sont egalement les plus petit on prend le 
+% premier des deux.
+% on applique le premier deplacement de ce chemin le plus court. -> fin du tour de l ia.
+
+% pour trouver l ensemble des chemins pour un meme pion menant a tuer la kalista adverse -> solve(). (on stoke a chaque fois le chemin: History)
+% on fait solve tant que sove ne nous revoie pas 2 chemins pareils (un setof() de solve() ? ya moyen)
+% on conserve le plus petit chemin de cet ensemble de chemin.
+% on relance cet algo pour l ensemble des pions bougeables a ce tour par l ia
+% on prend le plus petit chemin des chemin par pions.
+% on applique le premier depl de ce chemin. 
+
+% me semble efficace, et plutot tres logique , 
+% MAIS pas si simple a mettre en oeuvre et peut etre d une complexité (algorithmique) trop élévé pour un resultat qui ne sera valable que pour un tour...
+
+% BON OK C EST SUPER COMPLIQUE !!! ON PART SUR UNE PETITE EURISTIQUE FACILE DU GENRE: rapprocher le pion situé le plus pres de la kalista vers la kalista ? et bouger son pon si menacé
+
+%%%%%%%%%%%%%%%%%%%%%%%% Solve %%%%%%%%%%%%%%%%%%%
+
+% faire un theoricalKhan -> un theoricalDamier -> trop compliqué ? 
+
+/*
+solve (Etat, EtatFinal, History, [Mvt|Mvts]):-	theoricalMove(Etat,Mvt,EtatSucc), 		% 
+												\+ element(EtatSucc, History) 			% pour eviter les retour arriere -> les boucles infinies
+												possibleMoves(D,P,ResList),										%
+												list_pions_bougeables(ResList,ListPionBougeable),				% extrait de possible moves.
+
+												solve_general()
+
+
+*/
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+/*
+
+
+% trouver une heuristique simple pour ces deux cas, propostition:
+% si il lui manque un pion, le rajouter le plus pres possible de la kalista adverse (sur une case non dégomable au prochain tour du joueur adverse)
+% sinon application de l algo de l ia (solve) sans tenir compte du khan
+
+generateMove(D,P,MeilleurMove):- possibleMoves(D,P,[]), 
+generateMove(D,P,MeilleurMove):- possibleMoves(D,P,[[]]),
+
+
+
+generateMove(D,P,MeilleurMove):- possibleMoves(D,P,Result), solve (EtatInitial, EtatFinal, History, Mvts).
+
+
+
+tourIA(P):- damier(D), generateMoves(D,P,[X,Y]), modif_damier(X1,Y1,Arrive,P,D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND), 
+	retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
+
+*/
+
+/*
+
+tourH(P):- damier(D), possibleMoves(D,P,[]), choixAction(D,P),!. % Il peut y avoir que une simple liste je sais pas pourquoi, mieux vaut surcharger c est plus simple.
+tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
+
+tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
+	efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
+
+*/
+
+
+>>>>>>> 4b5f39454056904f2a64fc903d7e20bad44c7976
 
 
 
@@ -830,7 +911,7 @@ deplacer(_):- write('entrez la case de depart:'), nl, write('coordonne x1= '), r
 
 % IL PEUT REVENIR SUR SES PIED POUR L INSTANT MAIS J4AI UNE IDEE
 
-<<<<<<< HEAD
+
 
 
 friendlyFire('R',D,X,Y):- find_case(D,X,Y,[_,[]]),!. 	% si ca tombe pas sur un allié le predicat s efface
