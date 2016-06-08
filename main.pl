@@ -4,8 +4,8 @@
 khan(0).
 
 %%%%%%%%%%%%%%%% NORD
-damier([	[[2,[]],[3,'pR'],[1,[]],[2,[]],[2,[]],[3,[]]],
-			[[2,[]],[1,'pO'],[3,'pO'],[1,[]],[3,[]],[1,[]]],
+damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
+			[[2,[]],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
 			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
 			[[2,[]],[3,[]],[1,[]],[3,[]],[1,[]],[3,[]]],
@@ -337,8 +337,8 @@ choix_cote(X):-cote_init(_).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INITIALISATION DU DAMIER POUR LES 2 JOUEURS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-initBoard(Joueur):- Joueur='R', write('Init joueur R'),nl,cote_init(_), init_disposition(Joueur),!.
-initBoard(Joueur):- Joueur='O', write('Init joueur O'),nl, init_disposition(Joueur).
+initBoard(Joueur):- Joueur='R', write('Init joueur R'),nl,affiche_console(_),nl,cote_init(_), init_disposition(Joueur),!.
+initBoard(Joueur):- Joueur='O', write('Init joueur O'),nl,affiche_console(_),nl, init_disposition(Joueur).
 
 
 
@@ -689,8 +689,9 @@ write('3. IA VS IA'),nl,
 write('Entrez un choix'), nl, read(C), appel(C),!.
 
 appel(1):-jeuH_vs_H(P),!.
-appel(2):-!.
-appel(3):-!.
+
+appel(3):-write('Rouge gagne'),!.
+appel(2):-write('ça va etre chaud'),!.
 appel(_):- write('Erreur entrée incorrect'),nl,boucle_menu.
 
 
@@ -698,6 +699,42 @@ appel(_):- write('Erreur entrée incorrect'),nl,boucle_menu.
 boucle_menu:- repeat, menu,!.
 
 jeu_khan:- boucle_menu.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% IA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TRUCS ESSAIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*
