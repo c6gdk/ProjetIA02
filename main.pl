@@ -527,27 +527,27 @@ sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_
 
 % arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: cardinalité de la case (retour),
 
-checkCase('R',[N,'pR'],N).
-checkCase('R',[N,'kR'],N).
-checkCase('O',[N,'pO'],N).
-checkCase('O',[N,'kO'],N).
+checkCase('R',[N,'pR'],N):-!.
+checkCase('R',[N,'kR'],N):-!.
+checkCase('O',[N,'pO'],N):-!.
+checkCase('O',[N,'kO'],N):-!.
 
 
 % arg1: Palyer (donnée), arg2: ligne du damier (donnée), arg3: num ligne (donnée), arg4: num colonne a 1 lors de l appel (donnée),
 % arg5: liste des pieces de cette ligne, chaque pieces etant representé par une liste [L,C]  (retour) 
 
-piecesInLine(_,[],_,_,[]):-!.
-piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- khan(0), checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
-piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC]):- khan(Ar), checkCase(P,T,N), Ar=N, V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
-piecesInLine(P,[T|Q],U,V,RC):- V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(_,[],_,_,[],_):-!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC],Khan):- Khan=0, checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC],Khan):-  Khan\=0,checkCase(P,T,N), Khan=N, V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(P,[T|Q],U,V,RC,Khan):- V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
 
 
 
 % arg1: Palyer (donnée), arg2: damier (donnée), arg3: num ligne a 1 lors de l appel (donnée), arg4: num colonne a 1 lors de l appel (donnée),
 % arg5: liste de tout les pieces, chaque pieces etant representé par une liste [L,C]  (retour) 
 
-allPeices(_,[],_,_,[]):-!.
-allPeices(P,[T|Q],U,V,LP):- piecesInLine(P,T,U,V,PiL), U2 is U+1, allPeices(P,Q,U2,V,R), concat(PiL,R,LP),!.
+allPeices(_,[],_,_,[],Khan):-!.
+allPeices(P,[T|Q],U,V,LP,Khan):- piecesInLine(P,T,U,V,PiL,Khan), U2 is U+1, allPeices(P,Q,U2,V,R), concat(PiL,R,LP),!.
 
 
 
@@ -565,7 +565,7 @@ giveMovesAllPieces(_,_,[],[]):-!.
 giveMovesAllPieces(P,B,[T|Q],R):- movePiece(P,B,T,[]), giveMovesAllPieces(P,B,Q,R),!.
 giveMovesAllPieces(P,B,[T|Q],[Res|R]):- movePiece(P,B,T,Res), giveMovesAllPieces(P,B,Q,R).
 
-possibleMoves(Board,Player,PossibleMoveList):- allPeices(Player,Board,1,1,LP), giveMovesAllPieces(Player,Board,LP,PossibleMoveList),!.  
+possibleMoves(Board,Player,PossibleMoveList):- khan(Ar), allPeices(Player,Board,1,1,LP,Ar), giveMovesAllPieces(Player,Board,LP,PossibleMoveList),!.  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -661,10 +661,10 @@ action(D,P,1,Size):- write('Joue'), retract(khan(K)), asserta(khan(0)),tourH(P),
 action(D,P,_,_):- write('Erreur lors de la saisie'),nl,choixAction(D,P).
 
 
-choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), Size>6, write('Vous etes bloque, que voulez vous faire?'),nl,
+choixAction(D,P):- allPeices(P,D,1,1,LP,0), compte(LP,0,Size), Size>6, write('Vous etes bloque, que voulez vous faire?'),nl,
 write('1: Jouer n importe quelle piece?'),nl,read(C), action(D,P,C,Size).
 
-choixAction(D,P):- allPeices(P,D,1,1,LP), compte(LP,0,Size), Size<6, write('Vous etes bloque, que voulez vous faire?'),nl,
+choixAction(D,P):- allPeices(P,D,1,1,LP,0), compte(LP,0,Size), Size<6, write('Vous etes bloque, que voulez vous faire?'),nl,
 write('1: Jouer n importe quelle piece?'), nl, write('2 : Ajouter un pion? '),nl,read(C), action(D,P,C,Size).
 
 
