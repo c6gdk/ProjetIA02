@@ -5,9 +5,9 @@ khan(0).
 
 %%%%%%%%%%%%%%%% NORD
 damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
-			[[2,[]],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
+			[[2,[]],[1,'kR'],[3,[]],[1,[]],[3,[]],[1,'kO']],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
-			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
+			[[3,[]],[1,'pR'],[2,[]],[1,[]],[3,[]],[2,[]]],
 			[[2,[]],[3,[]],[1,[]],[3,[]],[1,'pO'],[3,'pR']],
 			[[2,[]],[1,[]],[3,[]],[2,[]],[2,[]],[1,[]]]
 		]).
@@ -80,11 +80,16 @@ vide([]).
 vide([[]]).
 
 
+
+
+%trouve l'element dans une liste simple
 element(X,[X|_]):-!.
 element(X,[_|Q]):- element(X,Q).
 
+%idem mais retourne la position
 
-
+element(X,[X|_],1):-!.
+element(X,[_|Q],N):- element(X,Q,Nres),N is Nres+1.
 % arg1: liste a concat (donnée), arg2: liste a concat (donnée), arg3: liste concaténée (retour)
 
 concat([],L,L).
@@ -672,7 +677,7 @@ tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
 tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
 efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
 
-kalista('R',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kR'),Temp), retire_last_elem(Temp,Liste_Poss).
+kalista('R',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kR'),Temp), retire_last_elem(Temp,Liste_Poss). %ici je suis obligé de recuperer l'arité dans le bagof, car je n'ai pas donner une arrité et le bagog ne fonctionnais pas
 kalista('O',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kO'),Temp), retire_last_elem(Temp,Liste_Poss).
 big_tourH_vs_H('O'):- damier(D), kalista('O',[],D), write('le joueur Rouge gagne'),nl,!.
 big_tourH_vs_H('R'):- damier(D), kalista('R',[],D), write('le joueur Ocre gagne'),nl,!.
@@ -708,6 +713,21 @@ jeu_khan:- boucle_menu.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% THE AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % le but de l IA est qu elle choisisse le meilleur coup possible, parmis la liste retournee par possible moves
+
+% position de la kalista, decomposition de la liste de coup possible, coordonnées du pion a jouer, ce predicat est sans doute reutilisable sous une autre forme pour choisir le pion a deplacer
+kalista_in(Kal,[[Pion,Liste_coup]|_],Pion):- element(Kal,Liste_coup,Num_pos),!.
+kalista_in(Kal,[[Pion,Liste_coup]|Ql],Poss_Pion):- \+element(Kal,Liste_coup),kalista_in(Kal,Ql,Poss_Pion).
+
+%si kalista mangeable, Damier,Joueur,Liste de mouvement possible, Nouveau damier
+generateMove(D,'R',Liste_de_dep,ND):-kalista('O',[[X,Y,A]|Q],D),kalista_in([X,Y],Liste_de_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],J,D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND).
+generateMove(D,'O',Liste_de_dep,ND):-kalista('R',[[X,Y,A]|Q],D),kalista_in([X,Y],Liste_de_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],J,D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND).
+
+%sinon
+generateMove(D,'O',Liste_de_dep,ND):- kalista('R',[[X,Y,A]|Q],D),\+kalista_in([X,Y],Liste_de_dep,[X1,Y1]).
+
+
+
+tourIA(D,J):-possibleMoves(D,J,Liste_de_dep),generateMove(D,J,Liste_de_dep,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_) ,!.
 
 
 
