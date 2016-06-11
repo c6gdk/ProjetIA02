@@ -5,10 +5,10 @@ khan(0).
 
 %%%%%%%%%%%%%%%% NORD
 damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
-			[[2,[]],[1,'kR'],[3,[]],[1,[]],[3,[]],[1,'kO']],
+			[[2,[]],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
-			[[3,[]],[1,'pR'],[2,[]],[1,[]],[3,[]],[2,[]]],
-			[[2,[]],[3,[]],[1,[]],[3,[]],[1,'pO'],[3,'pR']],
+			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
+			[[2,[]],[3,[]],[1,[]],[3,[]],[1,[]],[3,[]]],
 			[[2,[]],[1,[]],[3,[]],[2,[]],[2,[]],[1,[]]]
 		]).
 		
@@ -55,7 +55,7 @@ joueurO('O').
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% AFFICHAGE DU DAMIER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-affiche_console(_):- damier(X),khan(K), write('Position du Khan: '),write(K),nl,affichage_dam(X).
+affiche_console(_):- damier(X), affichage_dam(X).
 
 affiche_case(Y):- write(Y), write('|').
 
@@ -241,7 +241,7 @@ verif_case_occup(-1,J,X,_,NRD):- write('la case est deja occupee, veuillez recom
 positionner(J):- damier(X),  write('entrez les coordonees de la case du pion:'), nl, write('pour la ligne l= '), read(U), nl, write('pour la colonne C= '), read(V), nl, 
 	verif_co(J,U,V,RU,RV), find_line(J,RU,RV,X,RD,C), verif_case_occup(C,J,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
 
-
+positionnerIA(J,U,V):- damier(X), verif_co(J,U,V,RU,RV), find_line(J,RU,RV,X,RD,C), verif_case_occup(C,J,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
 
 
 
@@ -292,7 +292,7 @@ positionnerK(J):- damier(X),  write('entrez les coordonees de la case de la kali
 
 
 
-
+positionnerKIA(J,U,V):- damier(X), verif_co(J,U,V,RU,RV), find_lineK(J,RU,RV,X,RD,C), verif_case_occupK(C,J,X,RD,NRD), retract(damier(X)), asserta(damier(NRD)).
 
 
 
@@ -343,6 +343,10 @@ choix_cote(X):-cote_init(_).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INITIALISATION DU DAMIER POUR LES 2 JOUEURS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+initBoardIA('R'):-positionnerIA('R',1,1),positionnerIA('R',2,6),positionnerIA('R',1,5),positionnerIA('R',2,3),positionnerIA('R',2,4),positionnerKIA('R',1,2).
+initBoardIA('O'):-positionnerIA('O',5,5),positionnerIA('O',5,1),positionnerIA('O',6,2),positionnerIA('O',5,3),positionnerIA('O',5,6),positionnerKIA('O',6,5).
 
 initBoard(Joueur):- Joueur='R', write('Init joueur R'),nl,affiche_console(_),nl,cote_init(_), init_disposition(Joueur),!.
 initBoard(Joueur):- Joueur='O', write('Init joueur O'),nl,affiche_console(_),nl, init_disposition(Joueur).
@@ -494,10 +498,10 @@ depl(P,D,X,Y,List_Move,1,Dir):- NX is X+1, NX<7, Dir\='H', depl(P,D,NX,Y,List_Mo
 depl(P,D,X,Y,List_Move,1,Dir):- NY is Y-1, NY>0, Dir\='D', depl(P,D,X,NY,List_Move,0,'G').
 depl(P,D,X,Y,List_Move,1,Dir):- NY is Y+1, NY<7, Dir\='G', depl(P,D,X,NY,List_Move,0,'D').
 
-depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NX is X-1, NX>0, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]),Dir\='B', depl(P,D,NX,Y,List_Move,Res,'H').
-depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NX is X+1, NX<7, Res is Res_Dep-1 ,recup_case(NX,Y,A,[]),Dir\='H', depl(P,D,NX,Y,List_Move,Res,'B').
-depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NY is Y-1, NY>0, Res is Res_Dep-1 ,recup_case(X,NY,A,[]),Dir\='D', depl(P,D,X,NY,List_Move,Res,'G'). %% BUG ON peut revenir en arriere
-depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NY is Y+1, NY<7, Res is Res_Dep-1 ,recup_case(X,NY,A,[]),Dir\='G', depl(P,D,X,NY,List_Move,Res,'D').
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NX is X-1, NX>0, Res is Res_Dep-1 ,find_case(D,NX,Y,[A,[]]),Dir\='B', depl(P,D,NX,Y,List_Move,Res,'H').
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NX is X+1, NX<7, Res is Res_Dep-1 ,find_case(D,NX,Y,[A,[]]),Dir\='H', depl(P,D,NX,Y,List_Move,Res,'B').
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NY is Y-1, NY>0, Res is Res_Dep-1 ,find_case(D,X,NY,[A,[]]),Dir\='D', depl(P,D,X,NY,List_Move,Res,'G'). %% BUG ON peut revenir en arriere
+depl(P,D,X,Y,List_Move,Res_Dep,Dir):- NY is Y+1, NY<7, Res is Res_Dep-1 ,find_case(D,X,NY,[A,[]]),Dir\='G', depl(P,D,X,NY,List_Move,Res,'D').
 
 sim_depl(P,D,X1,Y1,List_Final,Res_Dep):- setof(Result,depl(P,D,X1,Y1,Result,Res_Dep,'N'),List_Final),!.
 
@@ -522,9 +526,9 @@ checkCase('O',[N,'kO'],N):-!.
 % arg5: liste des pieces de cette ligne, chaque pieces etant representé par une liste [L,C]  (retour) 
 
 piecesInLine(_,[],_,_,[],_):-!.
-piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC],Khan):- Khan=0, checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
-piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC],Khan):-  Khan\=0,checkCase(P,T,N), Khan=N, V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
-piecesInLine(P,[T|Q],U,V,RC,Khan):- V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC],Khan):- Khan=0, checkCase(P,T,N), V2 is V+1, piecesInLine(P,Q,U,V2,RC,Khan),!.
+piecesInLine(P,[T|Q],U,V,[[N,U,V]|RC],Khan):-  Khan\=0,checkCase(P,T,N), Khan=N, V2 is V+1, piecesInLine(P,Q,U,V2,RC,Khan),!.
+piecesInLine(P,[T|Q],U,V,RC,Khan):- V2 is V+1, piecesInLine(P,Q,U,V2,RC,Khan),!.
 
 
 
@@ -532,7 +536,7 @@ piecesInLine(P,[T|Q],U,V,RC,Khan):- V2 is V+1, piecesInLine(P,Q,U,V2,RC),!.
 % arg5: liste de tout les pieces, chaque pieces etant representé par une liste [L,C]  (retour) 
 
 allPeices(_,[],_,_,[],Khan):-!.
-allPeices(P,[T|Q],U,V,LP,Khan):- piecesInLine(P,T,U,V,PiL,Khan), U2 is U+1, allPeices(P,Q,U2,V,R), concat(PiL,R,LP),!.
+allPeices(P,[T|Q],U,V,LP,Khan):- piecesInLine(P,T,U,V,PiL,Khan), U2 is U+1, allPeices(P,Q,U2,V,R,Khan), concat(PiL,R,LP),!.
 
 
 
@@ -550,7 +554,7 @@ giveMovesAllPieces(_,_,[],[]):-!.
 giveMovesAllPieces(P,B,[T|Q],R):- movePiece(P,B,T,[]), giveMovesAllPieces(P,B,Q,R),!.
 giveMovesAllPieces(P,B,[T|Q],[Res|R]):- movePiece(P,B,T,Res), giveMovesAllPieces(P,B,Q,R).
 
-possibleMoves(Board,Player,PossibleMoveList):- khan(Ar), allPeices(Player,Board,1,1,LP,Ar), giveMovesAllPieces(Player,Board,LP,PossibleMoveList),!.  
+possibleMoves(Board,Player,PossibleMoveList,Khan):-  allPeices(Player,Board,1,1,LP,Khan), giveMovesAllPieces(Player,Board,LP,PossibleMoveList),!.  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% affichage liste de possibilite de move et choix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -655,12 +659,12 @@ write('1: Jouer n importe quelle piece?'), nl, write('2 : Ajouter un pion? '),nl
 
 
 
-tourH(P):- damier(D), possibleMoves(D,P,[]), choixAction(D,P),!. % Il peut y avoir que une simple liste je sais pas pourquoi, mieux vaut surcharger c est plus simple.
+tourH(P):- damier(D),khan(Ar), possibleMoves(D,P,[],Ar), choixAction(D,P),!. % Il peut y avoir que une simple liste je sais pas pourquoi, mieux vaut surcharger c est plus simple.
 
-tourH(P):- damier(D), possibleMoves(D,P,[[]]), choixAction(D,P),!.
+tourH(P):- damier(D),khan(Ar), possibleMoves(D,P,[[]],Ar), choixAction(D,P),!.
 
-tourH(P):- damier(D), possibleMoves(D,P,Result),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
-efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)), affiche_console(_),!.
+tourH(P):- damier(D),khan(Ar), possibleMoves(D,P,Result,Ar),modeH_choix(P,D,Result,[X1,Y1],Arrive), modif_damier(X1,Y1,Arrive,P,D,Temp2),
+efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),retract(damier(D)), asserta(damier(ND)),!.
 
 kalista('R',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kR'),Temp), retire_last_elem(Temp,Liste_Poss). %ici je suis obligé de recuperer l arité dans le bagof, car je n ai pas donné une arrité et le bagog ne fonctionnais pas
 kalista('O',Liste_Poss,D):- bagof([X,Y,A],trouve_case(D,X,Y,A,'kO'),Temp), retire_last_elem(Temp,Liste_Poss).
@@ -672,26 +676,6 @@ big_tourH_vs_H('R'):- damier(D), tourH('R'), big_tourH_vs_H('O').
 jeuH_vs_H(P):- initBoard('R'),initBoard('O'),big_tourH_vs_H('R').
 
 %damier(D),bagof([X,Y],trouve_case(D,X,Y,_,'kR'),Res).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LANCEMENT DU JEU ET MENU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-menu:- write('1. Player VS Player'),nl,
-write('2. Player VS IA'),nl,
-write('3. IA VS IA'),nl,
-write('Entrez un choix'), nl, read(C), appel(C),!.
-
-appel(1):-jeuH_vs_H(P),!.
-
-appel(3):-write('Rouge gagne'),!.
-appel(2):-write('ça va etre chaud'),!.
-appel(_):- write('Erreur entrée incorrect'),nl,boucle_menu.
-
-
-
-boucle_menu:- repeat, menu,!.
-
-jeu_khan:- boucle_menu.
-
 
 
 
@@ -719,11 +703,48 @@ kalista_in(Kal, [], []),!.
 kalista_in(Kal,[[Pion,Liste_coup]|_],Pion):- element(Kal,Liste_coup),!.
 kalista_in(Kal,[[Pion,Liste_coup]|Ql],Poss_Pion):- \+element(Kal,Liste_coup), kalista_in(Kal,Ql,Poss_Pion).
 */
+p_plus_proche([[[X,Y],Liste_coup]|[]],Distance,[X,Y],Liste_coup,[Xk,Yk]):- Distance is abs(Xk-X)+abs(Yk-Y),!.
+p_plus_proche([[[NX,NY],NListe_coup]|Ql],Distance,[NX,NY],NListe_coup,[Xk,Yk]):- p_plus_proche(Ql,Rdistance,[X,Y],Liste_coup,[Xk,Yk]),Rdistance>abs(Xk-NX)+abs(Yk-NY),Distance is abs(Xk-NX)+abs(Yk-NY),!.
+p_plus_proche([[[X,Y],Liste_coup]|Ql],Distance,Pion,Liste_Poss,[Xk,Yk]):- p_plus_proche(Ql,Distance,Pion,Liste_Poss,[Xk,Yk]),!.
+/*
+p_plus_proche([],_,Pion,Liste_coup,[_,_]):- true,!.
+p_plus_proche([[[X,Y],Liste_coup]|Ql],Distance,[X,Y],Liste_coup,[Xk,Yk]):-Distance>abs(Xk-X)+abs(Yk-Y),Rdistance is abs(Xk-X)+abs(Yk-Y), p_plus_proche(Ql,Rdistance,[X,Y],Liste_coup,[Xk,Yk]),!.
+p_plus_proche([[[X,Y],Liste_coup]|Ql],Distance,Pion,Liste_Poss,[Xk,Yk]):-Distance<abs(Xk-X)+abs(Yk-Y),p_plus_proche(Ql,Distance,Pion,Liste_Poss,[Xk,Yk]),!.
+*/
 
 
-% arg1: piece a check si dans zone de damage ennemi, arg2: liste possible moves, arg3: le pion ennemi qui peut nous prendre la piece entrée en arg1.
+coup_plus_proche([[X,Y]|[]],Distance,[X,Y],[Xk,Yk]):- Distance is abs(Xk-X)+abs(Yk-Y),!.
 
-piece_in(Piece, [], []),!.
+coup_plus_proche([[NX,NY]|Q],Distance,[NX,NY],[Xk,Yk]):- coup_plus_proche(Q,Rdistance,[X,Y],[Xk,Yk]), Rdistance>abs(Xk-NX)+abs(Yk-NY),Distance is abs(Xk-NX)+abs(Yk-NY),!.
+coup_plus_proche([[X,Y]|Q],Distance,Coup,[Xk,Yk]):- coup_plus_proche(Q,Distance,Coup,[Xk,Yk]),!.
+
+
+
+
+check_no_direct_eat('O',D,[[X,Y]|_],[X,Y]):- find_case(D,X,Y,[Ar,_]), possibleMoves(D,'R',ListDplEnnemi,Ar), \+piece_in([X,Y],ListDplEnnemi,_),!.
+check_no_direct_eat('O',D,[T|Q],Dpl_kali):- check_no_risk('O',D,Q,Dpl_kali).
+
+
+check_no_direct_eat('R',D,[[X,Y]|_],[X,Y]):- find_case(D,X,Y,[Ar,_]), possibleMoves(D,'O',ListDplEnnemi,Ar), \+piece_in([X,Y],ListDplEnnemi,_),!.
+check_no_direct_eat('R',D,[T|Q],Dpl_kali):- check_no_risk('R',D,Q,Dpl_kali).
+%verifie si la piece ou va arriver le pion n'est pas risqué (sert pour la kalista)
+
+
+
+
+check_no_risk('O',D,[[X,Y]|_],[X,Y]):- find_case(D,X,Y,[Ar,_]), possibleMoves(D,'R',ListDplEnnemi,0), \+piece_in([X,Y],ListDplEnnemi,_),!.
+check_no_risk('O',D,[T|Q],Dpl_kali):- check_no_risk('O',D,Q,Dpl_kali).
+
+
+check_no_risk('R',D,[[X,Y]|_],[X,Y]):- find_case(D,X,Y,[Ar,_]), possibleMoves(D,'O',ListDplEnnemi,0), \+piece_in([X,Y],ListDplEnnemi,_),!.
+check_no_risk('R',D,[T|Q],Dpl_kali):- check_no_risk('R',D,Q,Dpl_kali).
+
+%damier(D),sim_depl('O',D,2,6,List,1), efface_pion(2,6,Ligne,New_ligne,D,Damier_temp),check_no_risk('O',Damier_temp,List,Dpl).
+%damier(D), efface_pion(2,6,Ligne,New_ligne,D,Damier_temp), possibleMoves(Damier_temp,'R',List,)
+
+% arg1: coordonné piece a check si dans zone de damage ennemi, arg2: liste possible moves, arg3: le pion ennemi qui peut nous prendre la piece entrée en arg1.
+
+piece_in(Piece, [], []):-fail,!.
 piece_in(Piece,[[Pion,Liste_coup]|_],Pion):- element(Piece,Liste_coup),!.
 piece_in(Piece,[[Pion,Liste_coup]|Ql],Poss_Pion):- piece_in(Piece,Ql,Poss_Pion).
 
@@ -732,29 +753,88 @@ piece_in(Piece,[[Pion,Liste_coup]|Ql],Poss_Pion):- piece_in(Piece,Ql,Poss_Pion).
 
 
 %si kalista mangeable, Damier,Joueur,Liste de mouvement possible, Nouveau damier
-generateMove(D,'R',Liste_de_dep,ND):- kalista('O',[[X,Y,A]|Q],D), piece_in([X,Y],Liste_de_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'R',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
-generateMove(D,'O',Liste_de_dep,ND):- kalista('R',[[X,Y,A]|Q],D), piece_in([X,Y],Liste_de_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'O',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',Liste_de_dep,ND):- kalista('O',[[X,Y,A]|_],D), piece_in([X,Y],Liste_de_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'R',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'O',Liste_de_dep,ND):- kalista('R',[[X,Y,A]|_],D), piece_in([X,Y],Liste_de_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'O',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
 
 
 %sinon on check si on peut se faire prendre sa kalista, et si c est le cas on la deplace ou on bouffe le pion qui peut nous la prendre (si possible)
 % ici on suppose qu il n y a qu un seul pion ennemi pouvant prendre notre kalista. Sinon, n ayant qu un seul coup, on ne peut faire autrement que de perdre.
 
-generateMove(D,'O',Liste_de_dep,ND):- possibleMoves(D,'R',ListDplEnnemi), kalista('O',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
-										possibleMoves(D,'O',ListDplUs), piece_in([X1,Y1],ListDplUs,[X2,Y2]), modif_damier(X2,Y2,[X1,Y1],'O',D,Temp2), efface_pion(X2,Y2,Ligne,New_ligne,Temp2,ND),!.
-generateMove(D,'O',Liste_de_dep,ND):- possibleMoves(D,'R',ListDplEnnemi), kalista('O',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
-										possibleMoves(D,'O',ListDplUs), piece_in([X1,Y1],ListDplUs,[]), rapprocher-piece([X,Y],'O',D,ND),!.
 
-generateMove(D,'R',Liste_de_dep,ND):- possibleMoves(D,'O',ListDplEnnemi), kalista('R',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
-										possibleMoves(D,'R',ListDplUs), piece_in([X1,Y1],ListDplUs,[X2,Y2]), modif_damier(X2,Y2,[X1,Y1],'R',D,Temp2), efface_pion(X2,Y2,Ligne,New_ligne,Temp2,ND),!.
-generateMove(D,'R',Liste_de_dep,ND):- possibleMoves(D,'O',ListDplEnnemi), kalista('R',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
-										possibleMoves(D,'R',ListDplUs), piece_in([X1,Y1],ListDplUs,[]), rapprocher-piece([X,Y],'R',D,ND),!.	
+%stratégie si la kalista est en danger mais on peut manger la piece qui la met en danger
+generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'R',ListDplEnnemi,0), kalista('O',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
+										piece_in([X1,Y1],Liste_de_dep,[X2,Y2]), modif_damier(X2,Y2,[X1,Y1],'O',D,Temp2), efface_pion(X2,Y2,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'O',ListDplEnnemi,0), kalista('R',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
+										 piece_in([X1,Y1],Liste_de_dep,[X2,Y2]), modif_damier(X2,Y2,[X1,Y1],'R',D,Temp2), efface_pion(X2,Y2,Ligne,New_ligne,Temp2,ND),!.
+
+%stratégie si kalista est en danger et on peut la bouger -> alors on la deplace vers une case non menacé 
+generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'R',ListDplEnnemi,0), kalista('O',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('O',D,X,Y,Liste_dpl_kali,Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
+		,check_no_risk('O',Damier_temp,Liste_dpl_kali,Dpl_kali), modif_damier(X,Y,Dpl_kali,'O',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'O',ListDplEnnemi,0), kalista('R',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('R',D,X,Y,Liste_dpl_kali,Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
+		,check_no_risk('R',Damier_temp,Liste_dpl_kali,Dpl_kali),Dpl_kali\=[], modif_damier(X,Y,Dpl_kali,'R',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
+%stratégie si kalista est en danger et on peut la bouger et il n'y as pas de case non menacé -> alors on la deplace vers une case qui n'est pas directement prise avec le nouveau khan
+generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'R',ListDplEnnemi,0), kalista('O',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('O',D,X,Y,Liste_dpl_kali,Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
+		,check_no_direct_eat('O',Damier_temp,Liste_dpl_kali,Dpl_kali),Dpl_kali\=[],modif_damier(X,Y,Dpl_kali,'O',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'O',ListDplEnnemi,0), kalista('R',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('R',D,X,Y,Liste_dpl_kali,Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
+		,check_no_direct_eat('R',Damier_temp,Liste_dpl_kali,Dpl_kali),Dpl_kali\=[],modif_damier(X,Y,Dpl_kali,'R',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
+%si aucune case n'est viable random moove
+generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'R',ListDplEnnemi,0), kalista('O',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('O',D,X,Y,Liste_dpl_kali,Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
+		,check_no_direct_eat('O',Damier_temp,Liste_dpl_kali,Dpl_kali),Dpl_kali\=[],modif_damier(X,Y,Dpl_kali,'O',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'O',ListDplEnnemi,0), kalista('R',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('R',D,X,Y,[Dpl_kali|_],Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
+		,modif_damier(X,Y,Dpl_kali,'R',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
+
+
+%stratégie si kalista est en danger et on peut pas la bouger -> on bouge une piece vers une arité qui n'est pas celle de l'arité de la pice mettant en danger la kali, on le fera apres la stratégie sans danger
+
+
+%%%%%%%%%%%%%%%%%%%% ICI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% RESTE PLUS QUE ça PRATIQUEMENT%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%stratégie si on ne peut rien bouger
+%faudrat faire une pose un peu plus intelligente genre arité pouvant menacer
+
+%si jamais on peut manger direct la kali
+generateMove(D,'R',[],ND):- possibleMoves(D,'R',Liste_all_dep,0), kalista('O',[[X,Y,A]|_],D), piece_in([X,Y],Liste_all_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'R',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'O',[],ND):- possibleMoves(D,'O',Liste_all_dep,0), kalista('R',[[X,Y,A]|_],D), piece_in([X,Y],Liste_all_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'O',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
+
+
+
+% SI jamais le coup intelligent marche pas on pause au plus pret (parfois meme trop)
+generateMove(D,'O',[],ND):-khan(Khan),allPeices('O',D,1,1,LP,0), compte(LP,0,Size), Size<6,  kalista('R',[[Xk,Yk,_]|_],D),bagof([X,Y],trouve_case(D,X,Y,Khan,[]),Temp), retire_last_elem(Temp,Liste_Poss)
+			,coup_plus_proche(Liste_Poss,Distance,[Xc,Yc],[Xk,Yk]),ecrire_dam('pO',Xc,Yc,D,ND),!.
+generateMove(D,'R',[],ND):-khan(Khan),allPeices('R',D,1,1,LP,0), compte(LP,0,Size), Size<6,  kalista('O',[[Xk,Yk,_]|_],D),bagof([X,Y],trouve_case(D,X,Y,Khan,[]),Temp), retire_last_elem(Temp,Liste_Poss)
+			,coup_plus_proche(Liste_Poss,Distance,[Xc,Yc],[Xk,Yk]),ecrire_dam('pR',Xc,Yc,D,ND),!.
+%si jamais on peut pas poser
+generateMove(D,'O',[],ND):- possibleMoves(D,'O',Liste_all_dep,0), kalista('R',[[X,Y,_]|_],D),p_plus_proche(Liste_all_dep,Ndist,[Xp,Yp],Liste_coup,[X,Y]),coup_plus_proche(Liste_coup,Distance,Coup,[X,Y]),
+			 modif_damier(Xp,Yp,Coup,'O',D,Temp2), efface_pion(Xp,Yp,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',[],ND):- possibleMoves(D,'R',Liste_all_dep,0), kalista('O',[[X,Y,_]|_],D),p_plus_proche(Liste_all_dep,Ndist,[Xp,Yp],Liste_coup,[X,Y]),coup_plus_proche(Liste_coup,Distance,Coup,[X,Y]),
+			 modif_damier(Xp,Yp,Coup,'R',D,Temp2), efface_pion(Xp,Yp,Ligne,New_ligne,Temp2,ND),!.
+
+% dernier cas, si les autres generateMove n ont pas ete realises, on rapprohe le pion le plus pres de la kalista ennemie, de la kalista ennemie.
+%stratégie si pas de danger
+generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), kalista('R',[[X,Y,_]|_],D),p_plus_proche(Liste_de_dep,Ndist,[Xp,Yp],Liste_coup,[X,Y]),coup_plus_proche(Liste_coup,Distance,Coup,[X,Y]),
+			 modif_damier(Xp,Yp,Coup,'O',D,Temp2), efface_pion(Xp,Yp,Ligne,New_ligne,Temp2,ND),!.
+generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), kalista('O',[[X,Y,_]|_],D),p_plus_proche(Liste_de_dep,Ndist,[Xp,Yp],Liste_coup,[X,Y]),coup_plus_proche(Liste_coup,Distance,Coup,[X,Y]),
+			 modif_damier(Xp,Yp,Coup,'R',D,Temp2), efface_pion(Xp,Yp,Ligne,New_ligne,Temp2,ND),!.
+
+
+/*
+
+generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'R',ListDplEnnemi,0), kalista('O',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
+										possibleMoves(D,'O',Liste_de_dep,Ar), piece_in([X1,Y1],Liste_de_dep,[]), rapprocher_piece([X,Y],'O',D,ND),!.
+
+
+
+generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'O',ListDplEnnemi,0), kalista('R',[[X,Y,A]|Q],D), piece_in([X,Y],ListDplEnnemi,[X1,Y1]),
+										possibleMoves(D,'R',Liste_de_dep,Ar), piece_in([X1,Y1],Liste_de_dep,[]), rapprocher_piece([X,Y],'R',D,ND),!.	*/
 
 
 % autres generateMove repondant a notre stratégie...
 
 
 
-% dernier cas, si les autres generateMove n ont pas ete realises, on rapprohe le pion le plus pres de la kalista ennemie, de la kalista ennemie.
 
 
 
@@ -808,14 +888,56 @@ rapprocher_piece([X,Y],'R',D,ND):- find_case(D,X,Y,[Ar,_]), movePiece(J,D,[Ar,X,
 
 
 
-tourIA(D,J):- possibleMoves(D,J,Liste_de_dep), generateMove(D,J,Liste_de_dep,ND), retract(damier(D)), asserta(damier(ND)), affiche_console(_) ,!.
+tourIA(D,J):- khan(Ar),possibleMoves(D,J,Liste_de_dep,Ar), generateMove(D,J,Liste_de_dep,ND), retract(damier(D)), asserta(damier(ND)), affiche_console(_) ,!.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% IA VS Humain %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+big_tourIA_vs_H('O'):- damier(D), kalista('O',[],D), write('le joueur Rouge gagne'),nl,!.
+big_tourIA_vs_H('R'):- damier(D), kalista('R',[],D), write('le joueur Ocre gagne'),nl,!.
+big_tourIA_vs_H('O'):- write('Tour O'),khan(K),nl,write('Position du khan:'),write(K),nl,damier(D), tourIA(D,'O'), big_tourIA_vs_H('R').
+big_tourIA_vs_H('R'):- write('Tour R'),khan(K),nl,write('Position du khan:'),write(K),nl,damier(D), tourH('R'), big_tourIA_vs_H('O').
+
+
+jeuIA_vs_H(P):- initBoard('R'),initBoardIA('O'),write('Damien avant 1er tour:'),nl,affiche_console(_),big_tourIA_vs_H('R').
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% IA VS IA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
 
 
+big_tourIA_vs_IA('O'):- damier(D), kalista('O',[],D), write('le joueur Rouge gagne'),nl,!.
+big_tourIA_vs_IA('R'):- damier(D), kalista('R',[],D), write('le joueur Ocre gagne'),nl,!.
+big_tourIA_vs_IA('O'):- write('Tour 0'),khan(K),nl,write('Position du khan:'),write(K),nl,damier(D), tourIA(D,'O'), big_tourIA_vs_IA('R').
+big_tourIA_vs_IA('R'):- write('Tour R'),khan(K),nl,write('Position du khan:'),write(K),nl,damier(D), tourIA(D,'R'), big_tourIA_vs_IA('O').
 
 
+jeuIA_vs_IA(P):- initBoardIA('R'),initBoardIA('O'),write('Damien avant 1er tour:'),nl,affiche_console(_),big_tourIA_vs_IA('R').
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LANCEMENT DU JEU ET MENU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+menu:- write('1. Player VS Player'),nl,
+write('2. Player VS IA'),nl,
+write('3. IA VS IA'),nl,
+write('Entrez un choix'), nl, read(C), appel(C),!.
+
+appel(1):-jeuH_vs_H(P),!.
+
+
+appel(2):-jeuIA_vs_H(P),!.
+
+appel(3):-jeuIA_vs_IA(P),!.
+appel(_):- write('Erreur entrée incorrect'),nl,boucle_menu.
+
+
+
+boucle_menu:- repeat, menu,!.
+
+jeu_khan:- boucle_menu.
 
 
 
