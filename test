@@ -1,7 +1,0 @@
-
-menu:- write('1. PlayerVSPlayer'),nl,
-write('Entrez un choix'), read(C), appel(C).
-
-boucle_menu:- repeat, menu,!.
-
-jeu_khan:- boucle_menu.
