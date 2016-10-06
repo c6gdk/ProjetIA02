@@ -1,15 +1,20 @@
+%%%% MEIER RAPHAEL%%%%%%%
+%%%% MICHEL THOMAS %%%%%%%
+
+
+
 :-dynamic(damier/1).
 :-dynamic(khan/1).
 
 khan(0).
 
 %%%%%%%%%%%%%%%% NORD
-damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,'pR']],
+damier([	[[2,[]],[3,[]],[1,[]],[2,[]],[2,[]],[3,[]]],
 			[[2,[]],[1,[]],[3,[]],[1,[]],[3,[]],[1,[]]],
 			[[1,[]],[3,[]],[2,[]],[3,[]],[1,[]],[2,[]]],
 			[[3,[]],[1,[]],[2,[]],[1,[]],[3,[]],[2,[]]],
 			[[2,[]],[3,[]],[1,[]],[3,[]],[1,[]],[3,[]]],
-			[[2,'pR'],[1,[]],[3,[]],[2,[]],[2,[]],[1,'kO']]
+			[[2,[]],[1,[]],[3,[]],[2,[]],[2,[]],[1,[]]]
 		]).
 		
 %%%%%%%%%%%%%%%%% EST		
@@ -305,9 +310,7 @@ choix_cote(X):-cote_init(_).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INITIALISATION DU DAMIER POUR LES 2 JOUEURS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-initBoardIA('R'):-positionnerIA('R',1,1),positionnerIA('R',2,6),positionnerIA('R',1,5),positionnerIA('R',2,3),positionnerIA('R',2,4),positionnerKIA('R',1,2).
+initBoardIA('R'):-positionnerIA('R',2,5),positionnerIA('R',2,1),positionnerIA('R',1,2),positionnerIA('R',2,3),positionnerIA('R',2,6),positionnerKIA('R',1,5).
 initBoardIA('O'):-positionnerIA('O',5,5),positionnerIA('O',5,1),positionnerIA('O',6,2),positionnerIA('O',5,3),positionnerIA('O',5,6),positionnerKIA('O',6,5).
 
 initBoard(Joueur):- Joueur='R', write('Init joueur R'),nl,affiche_console(_),nl,cote_init(_), init_disposition(Joueur),!.
@@ -620,18 +623,7 @@ generateMove(D,'O',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'R',ListDplEnnem
 		,check_no_direct_eat('O',Damier_temp,Liste_dpl_kali,Dpl_kali),Dpl_kali\=[],modif_damier(X,Y,Dpl_kali,'O',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
 generateMove(D,'R',Liste_de_dep,ND):- khan(Ar), possibleMoves(D,'O',ListDplEnnemi,0), kalista('R',[[X,Y,A]|Q],D),Ar=A, piece_in([X,Y],ListDplEnnemi,[X1,Y1]), sim_depl('R',D,X,Y,[Dpl_kali|_],Ar), efface_pion(X,Y,Ligne,New_ligne,D,Damier_temp)
 		,modif_damier(X,Y,Dpl_kali,'R',D,Temp2), efface_pion(X,Y,Ligne,New_ligne,Temp2,ND),!.
-
-
-%stratégie si kalista est en danger et on peut pas la bouger -> on bouge une piece vers une arité qui n'est pas celle de l'arité de la pice mettant en danger la kali, on le fera apres la stratégie sans danger
-
-
-%%%%%%%%%%%%%%%%%%%% ICI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-% RESTE PLUS QUE ça PRATIQUEMENT%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%stratégie si on ne peut rien bouger
-%faudrat faire une pose un peu plus intelligente genre arité pouvant menacer
+		
 
 %si jamais on peut manger direct la kali
 generateMove(D,'R',[],ND):- possibleMoves(D,'R',Liste_all_dep,0), kalista('O',[[X,Y,A]|_],D), piece_in([X,Y],Liste_all_dep,[X1,Y1]), modif_damier(X1,Y1,[X,Y],'R',D,Temp2), efface_pion(X1,Y1,Ligne,New_ligne,Temp2,ND),!.
